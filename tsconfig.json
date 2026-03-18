@@ -1,0 +1,52 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": [
+      "ES2020",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "baseUrl": ".",
+    "paths": {
+      "@hongik/core": [
+        "packages/core/src"
+      ],
+      "@hongik/core/*": [
+        "packages/core/src/*"
+      ],
+      "@hongik/ui": [
+        "packages/ui/src"
+      ],
+      "@hongik/ui/*": [
+        "packages/ui/src/*"
+      ],
+      "@hongik/wasm": [
+        "packages/wasm/src"
+      ],
+      "@hongik/wasm/*": [
+        "packages/wasm/src/*"
+      ]
+    }
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
