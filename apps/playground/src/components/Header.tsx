@@ -10,7 +10,7 @@ import {
   setErrorLine,
   toggleTheme,
 } from "@/store/playgroundSlice";
-import { examples } from "@/data/examples";
+import { examples, categories } from "@/data/examples";
 import { executeViaAPI, shareCode } from "@/lib/api";
 import {
   loadInterpreter,
@@ -22,7 +22,9 @@ import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -203,25 +205,36 @@ export function Header() {
   }, []);
 
   return (
-    <header className="flex items-center justify-between border-b px-4 py-2">
-      <div className="flex items-center gap-4">
+    <header className="flex items-center justify-between border-b px-2 sm:px-4 py-2">
+      <div className="flex items-center gap-2 sm:gap-4 min-w-0">
         <h1 className="text-lg font-bold tracking-tight">
           <span className="text-primary">홍익</span>
-          <span className="text-muted-foreground ml-1 text-sm font-normal">
+          <span className="text-muted-foreground ml-1 text-sm font-normal hidden sm:inline">
             Playground
           </span>
         </h1>
 
         <Select onValueChange={handleExampleSelect}>
-          <SelectTrigger className="w-[180px] h-9">
+          <SelectTrigger className="w-[140px] sm:w-[180px] h-9">
             <SelectValue placeholder="예제 선택..." />
           </SelectTrigger>
           <SelectContent>
-            {examples.map((example) => (
-              <SelectItem key={example.id} value={example.id}>
-                {example.name}
-              </SelectItem>
-            ))}
+            {categories.map((category) => {
+              const categoryExamples = examples.filter(
+                (e) => e.category === category
+              );
+              if (categoryExamples.length === 0) return null;
+              return (
+                <SelectGroup key={category}>
+                  <SelectLabel>{category}</SelectLabel>
+                  {categoryExamples.map((example) => (
+                    <SelectItem key={example.id} value={example.id}>
+                      {example.name}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              );
+            })}
           </SelectContent>
         </Select>
       </div>
@@ -244,7 +257,7 @@ export function Header() {
             title="중지"
           >
             <Square className="h-3.5 w-3.5" />
-            중지
+            <span className="hidden sm:inline">중지</span>
           </Button>
         ) : (
           <Button
@@ -254,7 +267,7 @@ export function Header() {
             title="실행 (Ctrl+Enter)"
           >
             <Play className="h-3.5 w-3.5" />
-            실행
+            <span className="hidden sm:inline">실행</span>
           </Button>
         )}
 

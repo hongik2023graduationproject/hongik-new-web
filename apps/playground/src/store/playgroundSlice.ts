@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 export type Theme = "light" | "dark";
 
-const STORAGE_KEY = "hongik-playground-code";
+export const STORAGE_KEY = "hongik-playground-code";
 const THEME_STORAGE_KEY = "hongik-playground-theme";
 
 const DEFAULT_CODE = `// 홍익 플레이그라운드에 오신 것을 환영합니다!
@@ -54,9 +54,6 @@ const playgroundSlice = createSlice({
     },
     setCode(state, action: PayloadAction<string>) {
       state.code = action.payload;
-      if (typeof window !== "undefined") {
-        localStorage.setItem(STORAGE_KEY, action.payload);
-      }
     },
     setOutput(state, action: PayloadAction<string>) {
       state.output = action.payload;

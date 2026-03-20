@@ -1,20 +1,34 @@
 "use client";
 
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
-import { initFromStorage, setCode } from "@/store/playgroundSlice";
+import { initFromStorage, setCode, STORAGE_KEY } from "@/store/playgroundSlice";
 import { fetchSharedCode } from "@/lib/api";
 import { Header } from "./Header";
 import { EditorPanel } from "./EditorPanel";
 import { ConsolePanel } from "./ConsolePanel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 
 export function Playground() {
   const dispatch = useAppDispatch();
   const theme = useAppSelector((state) => state.playground.theme);
+  const code = useAppSelector((state) => state.playground.code);
   const searchParams = useSearchParams();
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Debounced localStorage save (500ms)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => {
+      localStorage.setItem(STORAGE_KEY, code);
+    }, 500);
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    };
+  }, [code]);
 
   useEffect(() => {
     dispatch(initFromStorage());

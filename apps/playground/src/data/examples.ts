@@ -1,15 +1,27 @@
+export type ExampleCategory = "기본" | "제어흐름" | "함수" | "클래스" | "고급";
+
 export interface Example {
   id: string;
   name: string;
   description: string;
+  category: ExampleCategory;
   code: string;
 }
+
+export const categories: ExampleCategory[] = [
+  "기본",
+  "제어흐름",
+  "함수",
+  "클래스",
+  "고급",
+];
 
 export const examples: Example[] = [
   {
     id: "hello",
     name: "기본 출력",
     description: "변수 선언과 출력",
+    category: "기본",
     code: `// 기본 변수와 출력
 정수 나이 = 25;
 실수 키 = 175.5;
@@ -21,9 +33,31 @@ export const examples: Example[] = [
 `,
   },
   {
+    id: "loop",
+    name: "반복문",
+    description: "반복문 사용 예제",
+    category: "제어흐름",
+    code: `// 반복문 예제
+출력("1부터 10까지의 합:");
+
+정수 합계 = 0;
+반복 (정수 i = 1; i <= 10; i = i + 1) {
+  합계 = 합계 + i;
+}
+출력("합계: " + 합계);
+
+출력("");
+출력("구구단 3단:");
+반복 (정수 j = 1; j <= 9; j = j + 1) {
+  출력("3 x " + j + " = " + (3 * j));
+}
+`,
+  },
+  {
     id: "function",
     name: "함수 정의",
     description: "함수 선언과 호출",
+    category: "함수",
     code: `// 함수 정의와 호출
 함수 더하기(a, b) {
   리턴 a + b;
@@ -42,29 +76,10 @@ export const examples: Example[] = [
 `,
   },
   {
-    id: "loop",
-    name: "반복문",
-    description: "반복문 사용 예제",
-    code: `// 반복문 예제
-출력("1부터 10까지의 합:");
-
-정수 합계 = 0;
-반복 (정수 i = 1; i <= 10; i = i + 1) {
-  합계 = 합계 + i;
-}
-출력("합계: " + 합계);
-
-출력("");
-출력("구구단 3단:");
-반복 (정수 j = 1; j <= 9; j = j + 1) {
-  출력("3 x " + j + " = " + (3 * j));
-}
-`,
-  },
-  {
     id: "class",
     name: "클래스",
     description: "클래스 정의와 사용",
+    category: "클래스",
     code: `// 클래스 예제
 클래스 동물 {
   문자 이름;
@@ -91,6 +106,7 @@ export const examples: Example[] = [
     id: "error-handling",
     name: "에러 처리",
     description: "시도-실패 구문",
+    category: "고급",
     code: `// 에러 처리 예제
 함수 나누기(a, b) {
   만약 (b == 0) 라면 {
@@ -114,6 +130,7 @@ export const examples: Example[] = [
     id: "fibonacci",
     name: "피보나치",
     description: "피보나치 수열 계산",
+    category: "함수",
     code: `// 피보나치 수열
 함수 피보나치(n) {
   만약 (n <= 0) 라면 {

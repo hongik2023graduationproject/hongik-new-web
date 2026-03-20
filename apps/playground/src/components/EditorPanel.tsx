@@ -12,7 +12,7 @@ import {
 } from "@/editor/hongik-language";
 import { registerHongikCompletions } from "@/editor/hongik-completions";
 import type { OnMount } from "@monaco-editor/react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import type { editor } from "monaco-editor";
 
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
@@ -26,6 +26,11 @@ const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
 
 let completionsRegistered = false;
 
+interface CursorInfo {
+  line: number;
+  column: number;
+}
+
 export function EditorPanel() {
   const dispatch = useAppDispatch();
   const code = useAppSelector((state) => state.playground.code);
@@ -33,6 +38,15 @@ export function EditorPanel() {
   const errorLine = useAppSelector((state) => state.playground.errorLine);
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const decorationsRef = useRef<editor.IEditorDecorationsCollection | null>(null);
+
+  const [cursor, setCursor] = useState<CursorInfo>({ line: 1, column: 1 });
+
+  const totalLines = code.split("\n").length;
+  const charCount = code.length;
+
+  const handleCursorChange = useCallback((e: editor.ICursorPositionChangedEvent) => {
+    setCursor({ line: e.position.lineNumber, column: e.position.column });
+  }, []);
 
   const handleEditorMount: OnMount = (editorInstance, monaco) => {
     editorRef.current = editorInstance;
@@ -58,6 +72,15 @@ export function EditorPanel() {
     monaco.editor.defineTheme("hongik-dark", hongikDarkTheme);
     monaco.editor.defineTheme("hongik-light", hongikLightTheme);
     monaco.editor.setTheme(theme === "dark" ? "hongik-dark" : "hongik-light");
+
+    // Listen for cursor position changes
+    editorInstance.onDidChangeCursorPosition(handleCursorChange);
+
+    // Set initial cursor info
+    const pos = editorInstance.getPosition();
+    if (pos) {
+      setCursor({ line: pos.lineNumber, column: pos.column });
+    }
   };
 
   // Error line highlighting
@@ -90,7 +113,7 @@ export function EditorPanel() {
   }, [errorLine]);
 
   return (
-    <div className="h-full">
+    <div className="flex h-full flex-col">
       <style jsx global>{`
         .error-line-highlight {
           background-color: rgba(255, 0, 0, 0.1) !important;
@@ -104,32 +127,43 @@ export function EditorPanel() {
           margin-top: 6px;
         }
       `}</style>
-      <MonacoEditor
-        height="100%"
-        language={HONGIK_LANGUAGE_ID}
-        theme={theme === "dark" ? "hongik-dark" : "hongik-light"}
-        value={code}
-        onChange={(value) => dispatch(setCode(value ?? ""))}
-        onMount={handleEditorMount}
-        options={{
-          fontSize: 14,
-          fontFamily: "'JetBrains Mono', 'D2Coding', monospace",
-          minimap: { enabled: false },
-          scrollBeyondLastLine: false,
-          padding: { top: 16 },
-          lineNumbers: "on",
-          renderLineHighlight: "line",
-          bracketPairColorization: { enabled: true },
-          automaticLayout: true,
-          tabSize: 2,
-          wordWrap: "on",
-          glyphMargin: true,
-          suggest: {
-            showKeywords: true,
-            showSnippets: true,
-          },
-        }}
-      />
+      <div className="flex-1 min-h-0">
+        <MonacoEditor
+          height="100%"
+          language={HONGIK_LANGUAGE_ID}
+          theme={theme === "dark" ? "hongik-dark" : "hongik-light"}
+          value={code}
+          onChange={(value) => dispatch(setCode(value ?? ""))}
+          onMount={handleEditorMount}
+          options={{
+            fontSize: 14,
+            fontFamily: "'JetBrains Mono', 'D2Coding', monospace",
+            minimap: { enabled: false },
+            scrollBeyondLastLine: false,
+            padding: { top: 16 },
+            lineNumbers: "on",
+            renderLineHighlight: "line",
+            bracketPairColorization: { enabled: true },
+            automaticLayout: true,
+            tabSize: 2,
+            wordWrap: "on",
+            glyphMargin: true,
+            suggest: {
+              showKeywords: true,
+              showSnippets: true,
+            },
+          }}
+        />
+      </div>
+      <div className="flex items-center justify-between border-t bg-muted/30 px-4 py-1 text-xs text-muted-foreground">
+        <div className="flex items-center gap-3">
+          <span>줄 {cursor.line}, 열 {cursor.column}</span>
+        </div>
+        <div className="flex items-center gap-3">
+          <span>{totalLines}줄</span>
+          <span>{charCount}자</span>
+        </div>
+      </div>
     </div>
   );
 }
