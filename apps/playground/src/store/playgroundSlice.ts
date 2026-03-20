@@ -62,7 +62,16 @@ const playgroundSlice = createSlice({
       state.output = action.payload;
     },
     appendOutput(state, action: PayloadAction<string>) {
-      state.output += action.payload + "\n";
+      const MAX_OUTPUT_LENGTH = 100_000;
+      if (state.output.length >= MAX_OUTPUT_LENGTH) return;
+      const next = state.output + action.payload + "\n";
+      if (next.length > MAX_OUTPUT_LENGTH) {
+        state.output =
+          next.slice(0, MAX_OUTPUT_LENGTH) +
+          "\n[출력이 100,000자를 초과하여 잘렸습니다]";
+      } else {
+        state.output = next;
+      }
     },
     clearOutput(state) {
       state.output = "";

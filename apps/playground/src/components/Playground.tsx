@@ -2,6 +2,7 @@
 
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { initFromStorage, setCode } from "@/store/playgroundSlice";
+import { fetchSharedCode } from "@/lib/api";
 import { Header } from "./Header";
 import { EditorPanel } from "./EditorPanel";
 import { ConsolePanel } from "./ConsolePanel";
@@ -17,6 +18,17 @@ export function Playground() {
 
   useEffect(() => {
     dispatch(initFromStorage());
+
+    // URL ?share=TOKEN: fetch shared code from API
+    const shareToken = searchParams.get("share");
+    if (shareToken) {
+      fetchSharedCode(shareToken)
+        .then((sharedCode) => dispatch(setCode(sharedCode)))
+        .catch(() => {
+          // ignore – fall through to default code
+        });
+      return;
+    }
 
     // URL ?code= parameter takes priority over localStorage
     const codeParam = searchParams.get("code");
