@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "ES2020",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
@@ -19,7 +19,13 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@hongik/core": ["../../packages/core/src"],
+      "@hongik/core/*": ["../../packages/core/src/*"],
+      "@hongik/ui": ["../../packages/ui/src"],
+      "@hongik/ui/*": ["../../packages/ui/src/*"],
+      "@hongik/wasm": ["../../packages/wasm/src"],
+      "@hongik/wasm/*": ["../../packages/wasm/src/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
