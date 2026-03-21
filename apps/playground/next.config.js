@@ -1,6 +1,13 @@
+const path = require('path');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'standalone',
   reactStrictMode: true,
+  experimental: {
+    // Required for pnpm monorepo: trace files outside the app directory
+    outputFileTracingRoot: path.join(__dirname, '../../'),
+  },
   webpack(config) {
     // WASM file support
     config.experiments = {
