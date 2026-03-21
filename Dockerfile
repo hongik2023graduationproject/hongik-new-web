@@ -10,6 +10,9 @@ COPY packages/ui/package.json ./packages/ui/
 COPY packages/wasm/package.json ./packages/wasm/
 COPY apps/playground/package.json ./apps/playground/
 
+# Copy source for workspace packages needed at install time
+COPY packages/core/src ./packages/core/src
+
 RUN pnpm install --no-frozen-lockfile
 
 
