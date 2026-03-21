@@ -19,6 +19,9 @@ RUN corepack enable && corepack prepare pnpm@8.13.0 --activate
 
 WORKDIR /app
 
+ARG NEXT_PUBLIC_API_URL=https://hongik.api.tolelom.xyz
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
