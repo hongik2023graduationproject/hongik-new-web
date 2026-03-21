@@ -10,7 +10,7 @@ COPY packages/ui/package.json ./packages/ui/
 COPY packages/wasm/package.json ./packages/wasm/
 COPY apps/playground/package.json ./apps/playground/
 
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --no-frozen-lockfile
 
 
 FROM node:20-alpine AS builder
