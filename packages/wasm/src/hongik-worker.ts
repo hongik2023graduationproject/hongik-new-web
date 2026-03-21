@@ -34,10 +34,8 @@ let interpreter: HongIkInterpreterInstance | null = null;
 async function loadWasm(wasmUrl?: string): Promise<HongIkEmscriptenModule> {
     const url = wasmUrl || './hongik-wasm.js';
 
-    // Emscripten MODULARIZE 출력을 importScripts로 로드
     importScripts(url);
 
-    // EXPORT_NAME='HongIkModule' 로 설정되어 있으므로 글로벌에 존재
     const HongIkModule = (self as unknown as Record<string, unknown>)['HongIkModule'] as
         ((opts?: Record<string, unknown>) => Promise<HongIkEmscriptenModule>) | undefined;
 
@@ -46,6 +44,13 @@ async function loadWasm(wasmUrl?: string): Promise<HongIkEmscriptenModule> {
     }
 
     return await HongIkModule();
+}
+
+function requireInterpreter(id: number): HongIkInterpreterInstance | WorkerResponse {
+    if (!interpreter) {
+        return { id, type: 'error', message: '인터프리터가 초기화되지 않았습니다. init을 먼저 호출하세요.' };
+    }
+    return interpreter;
 }
 
 async function handleMessage(msg: WorkerRequest): Promise<WorkerResponse> {
@@ -60,67 +65,57 @@ async function handleMessage(msg: WorkerRequest): Promise<WorkerResponse> {
             }
 
             case 'execute': {
-                if (!interpreter) {
-                    return { id, type: 'error', message: '인터프리터가 초기화되지 않았습니다. init을 먼저 호출하세요.' };
-                }
+                const interp = requireInterpreter(id);
+                if (!('execute' in interp)) return interp as WorkerResponse;
                 let result: string;
                 if (msg.timeoutMs !== undefined || msg.maxMemoryBytes !== undefined) {
-                    result = interpreter.executeWithLimits(
+                    result = interp.executeWithLimits(
                         msg.code,
                         msg.timeoutMs ?? 5000,
                         msg.maxMemoryBytes ?? 33554432,
                     );
                 } else {
-                    result = interpreter.execute(msg.code);
+                    result = interp.execute(msg.code);
                 }
                 return { id, type: 'execute', result };
             }
 
             case 'getTokens': {
-                if (!interpreter) {
-                    return { id, type: 'error', message: '인터프리터가 초기화되지 않았습니다.' };
-                }
-                const result = interpreter.getTokens(msg.code);
-                return { id, type: 'getTokens', result };
+                const interp = requireInterpreter(id);
+                if (!('execute' in interp)) return interp as WorkerResponse;
+                return { id, type: 'getTokens', result: interp.getTokens(msg.code) };
             }
 
             case 'reset': {
-                if (!interpreter) {
-                    return { id, type: 'error', message: '인터프리터가 초기화되지 않았습니다.' };
-                }
-                interpreter.reset();
+                const interp = requireInterpreter(id);
+                if (!('execute' in interp)) return interp as WorkerResponse;
+                interp.reset();
                 return { id, type: 'reset', success: true };
             }
 
             case 'writeFile': {
-                if (!interpreter) {
-                    return { id, type: 'error', message: '인터프리터가 초기화되지 않았습니다.' };
-                }
-                interpreter.writeFile(msg.path, msg.content);
+                const interp = requireInterpreter(id);
+                if (!('execute' in interp)) return interp as WorkerResponse;
+                interp.writeFile(msg.path, msg.content);
                 return { id, type: 'writeFile', success: true };
             }
 
             case 'readFile': {
-                if (!interpreter) {
-                    return { id, type: 'error', message: '인터프리터가 초기화되지 않았습니다.' };
-                }
-                const result = interpreter.readFile(msg.path);
-                return { id, type: 'readFile', result };
+                const interp = requireInterpreter(id);
+                if (!('execute' in interp)) return interp as WorkerResponse;
+                return { id, type: 'readFile', result: interp.readFile(msg.path) };
             }
 
             case 'fileExists': {
-                if (!interpreter) {
-                    return { id, type: 'error', message: '인터프리터가 초기화되지 않았습니다.' };
-                }
-                const result = interpreter.fileExists(msg.path);
-                return { id, type: 'fileExists', result };
+                const interp = requireInterpreter(id);
+                if (!('execute' in interp)) return interp as WorkerResponse;
+                return { id, type: 'fileExists', result: interp.fileExists(msg.path) };
             }
 
             case 'deleteFile': {
-                if (!interpreter) {
-                    return { id, type: 'error', message: '인터프리터가 초기화되지 않았습니다.' };
-                }
-                interpreter.deleteFile(msg.path);
+                const interp = requireInterpreter(id);
+                if (!('execute' in interp)) return interp as WorkerResponse;
+                interp.deleteFile(msg.path);
                 return { id, type: 'deleteFile', success: true };
             }
 

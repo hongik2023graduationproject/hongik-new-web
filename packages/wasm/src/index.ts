@@ -59,6 +59,34 @@ interface TokensResultJson {
     errorLine?: number;
 }
 
+// ---- 런타임 검증 ----
+
+function parseExecuteResult(raw: string): ExecuteResultJson {
+    let parsed: unknown;
+    try {
+        parsed = JSON.parse(raw);
+    } catch {
+        throw new Error('인터프리터 응답을 파싱할 수 없습니다');
+    }
+    if (typeof parsed !== 'object' || parsed === null || typeof (parsed as Record<string, unknown>)['success'] !== 'boolean') {
+        throw new Error('인터프리터 응답 형식이 올바르지 않습니다');
+    }
+    return parsed as ExecuteResultJson;
+}
+
+function parseTokensResult(raw: string): TokensResultJson {
+    let parsed: unknown;
+    try {
+        parsed = JSON.parse(raw);
+    } catch {
+        return { tokens: [] };
+    }
+    if (typeof parsed !== 'object' || parsed === null) {
+        return { tokens: [] };
+    }
+    return parsed as TokensResultJson;
+}
+
 // ---- WASM 지원 감지 ----
 
 /**
@@ -67,7 +95,6 @@ interface TokensResultJson {
 export function isWasmSupported(): boolean {
     try {
         if (typeof WebAssembly !== 'object') return false;
-        // 최소 WASM 모듈 컴파일 테스트 (magic number + version + empty section)
         const bytes = new Uint8Array([0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00]);
         const module = new WebAssembly.Module(bytes);
         return module instanceof WebAssembly.Module;
@@ -137,6 +164,15 @@ export async function loadInterpreter(
 
     const worker = new Worker(workerUrl);
     const pending = new Map<number, { resolve: (v: unknown) => void; reject: (r: unknown) => void }>();
+    let isDisposed = false;
+    let isCrashed = false;
+
+    function rejectAll(reason: string): void {
+        for (const [, handler] of pending) {
+            handler.reject(new Error(reason));
+        }
+        pending.clear();
+    }
 
     worker.onmessage = (e: MessageEvent<WorkerResponse>) => {
         const { id } = e.data;
@@ -152,14 +188,17 @@ export async function loadInterpreter(
     };
 
     worker.onerror = (e) => {
-        // 모든 대기 중인 요청 거부
-        for (const [, handler] of pending) {
-            handler.reject(new Error(`Worker 오류: ${e.message}`));
-        }
-        pending.clear();
+        isCrashed = true;
+        rejectAll(`Worker 오류: ${e.message}`);
     };
 
     function send<T extends WorkerResponse>(req: Omit<WorkerRequest, 'id'>): Promise<T> {
+        if (isDisposed) {
+            return Promise.reject(new Error('인터프리터가 종료되었습니다.'));
+        }
+        if (isCrashed) {
+            return Promise.reject(new Error('Worker가 비정상 종료되었습니다. 페이지를 새로고침해주세요.'));
+        }
         const id = ++requestId;
         const { promise, resolve, reject } = createPendingRequest<T>();
         pending.set(id, { resolve: resolve as (v: unknown) => void, reject });
@@ -182,7 +221,7 @@ export async function loadInterpreter(
             } as Omit<WorkerRequest, 'id'>);
 
             const executionTime = performance.now() - startTime;
-            const parsed: ExecuteResultJson = JSON.parse(resp.result);
+            const parsed = parseExecuteResult(resp.result);
 
             return {
                 stdout: parsed.output ?? '',
@@ -198,7 +237,7 @@ export async function loadInterpreter(
                 code,
             } as Omit<WorkerRequest, 'id'>);
 
-            const parsed: TokensResultJson = JSON.parse(resp.result);
+            const parsed = parseTokensResult(resp.result);
             return parsed.tokens ?? [];
         },
 
@@ -231,11 +270,9 @@ export async function loadInterpreter(
         },
 
         dispose(): void {
+            isDisposed = true;
             worker.terminate();
-            for (const [, handler] of pending) {
-                handler.reject(new Error('인터프리터가 종료되었습니다.'));
-            }
-            pending.clear();
+            rejectAll('인터프리터가 종료되었습니다.');
         },
     };
 }

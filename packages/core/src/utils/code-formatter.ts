@@ -33,13 +33,6 @@ export function formatCode(code: string): string {
       indentLevel++;
     }
 
-    // Re-increase indent after dedent keywords that open blocks
-    if (
-      DEDENT_KEYWORDS.some((kw) => trimmed.startsWith(kw)) &&
-      trimmed.endsWith('{')
-    ) {
-      // Already handled by OPEN_BRACES above
-    }
   }
 
   return formatted.join('\n');
