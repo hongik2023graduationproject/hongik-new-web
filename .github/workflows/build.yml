@@ -38,7 +38,7 @@ jobs:
         run: pnpm lint
 
       - name: 테스트 실행 (커버리지 포함)
-        run: pnpm test -- --coverage
+        run: pnpm turbo run test -- --coverage
 
       - name: 커버리지 요약 생성
         if: always()
