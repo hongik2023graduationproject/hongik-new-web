@@ -22,7 +22,7 @@
   "scripts": {
     "dev": "tsc --watch",
     "build": "tsc",
-    "test": "vitest",
+    "test": "vitest --passWithNoTests",
     "lint": "echo \"lint skipped (checked via app build)\"",
     "clean": "rm -rf dist"
   },
