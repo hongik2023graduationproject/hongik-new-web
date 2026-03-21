@@ -9,6 +9,7 @@ import {
   setExecutionTime,
   setErrorLine,
   toggleTheme,
+  STORAGE_KEY,
 } from "@/store/playgroundSlice";
 import { examples, categories } from "@/data/examples";
 import { executeViaAPI, shareCode } from "@/lib/api";
@@ -44,7 +45,9 @@ import {
   Share2,
   Code2,
   HelpCircle,
+  GraduationCap,
 } from "lucide-react";
+import { OnboardingTutorial } from "./OnboardingTutorial";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 function parseErrorLine(stderr: string): number | null {
@@ -65,9 +68,12 @@ export function Header() {
   const interpreterRef = useRef<HongIkInterpreter | null>(null);
   const wasmFailedRef = useRef(false);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const isRunningRef = useRef(isRunning);
+  isRunningRef.current = isRunning;
 
   const [shareToast, setShareToast] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
+  const [onboardingRequested, setOnboardingRequested] = useState(false);
 
   const handleExampleSelect = (exampleId: string) => {
     const example = examples.find((e) => e.id === exampleId);
@@ -93,7 +99,7 @@ export function Header() {
   }, [dispatch]);
 
   const handleRun = useCallback(async () => {
-    if (isRunning) return;
+    if (isRunningRef.current) return;
 
     dispatch(setIsRunning(true));
     dispatch(clearOutput());
@@ -116,6 +122,7 @@ export function Header() {
             dispatch(setErrorLine(parseErrorLine(result.stderr)));
           }
           dispatch(setExecutionTime(result.executionTime));
+          console.log("[WASM] 브라우저에서 실행됨", result.executionTime + "ms");
           return;
         } catch {
           if (controller.signal.aborted) return;
@@ -133,6 +140,7 @@ export function Header() {
         dispatch(setErrorLine(parseErrorLine(result.stderr)));
       }
       dispatch(setExecutionTime(result.executionTime));
+      console.log("[API] 백엔드 서버에서 실행됨", result.executionTime + "ms");
     } catch (error) {
       if (controller.signal.aborted) return;
       const message = error instanceof Error ? error.message : String(error);
@@ -142,7 +150,7 @@ export function Header() {
       abortControllerRef.current = null;
       dispatch(setIsRunning(false));
     }
-  }, [code, isRunning, dispatch]);
+  }, [code, dispatch]);
 
   const handleShare = useCallback(async () => {
     try {
@@ -165,6 +173,15 @@ export function Header() {
     dispatch(setCode(formatted));
   }, [code, dispatch]);
 
+  const tabs = useAppSelector((state) => state.playground.tabs);
+  const activeTabId = useAppSelector((state) => state.playground.activeTabId);
+
+  const handleSave = useCallback(() => {
+    localStorage.setItem(STORAGE_KEY, code);
+    localStorage.setItem("hongik-playground-tabs", JSON.stringify(tabs));
+    localStorage.setItem("hongik-playground-active-tab", activeTabId);
+  }, [code, tabs, activeTabId]);
+
   // Keyboard shortcuts
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -172,6 +189,11 @@ export function Header() {
       if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
         e.preventDefault();
         handleRun();
+      }
+      // Ctrl+S: save to localStorage
+      if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key === "s") {
+        e.preventDefault();
+        handleSave();
       }
       // Ctrl+Shift+F: format
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "F") {
@@ -195,7 +217,7 @@ export function Header() {
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [handleRun, handleFormat]);
+  }, [handleRun, handleFormat, handleSave]);
 
   // Cleanup interpreter on unmount
   useEffect(() => {
@@ -215,7 +237,7 @@ export function Header() {
         </h1>
 
         <Select onValueChange={handleExampleSelect}>
-          <SelectTrigger className="w-[140px] sm:w-[180px] h-9">
+          <SelectTrigger className="w-[140px] sm:w-[180px] h-9" data-onboarding="example-selector">
             <SelectValue placeholder="예제 선택..." />
           </SelectTrigger>
           <SelectContent>
@@ -228,7 +250,7 @@ export function Header() {
                 <SelectGroup key={category}>
                   <SelectLabel>{category}</SelectLabel>
                   {categoryExamples.map((example) => (
-                    <SelectItem key={example.id} value={example.id}>
+                    <SelectItem key={example.id} value={example.id} title={example.name}>
                       {example.name}
                     </SelectItem>
                   ))}
@@ -265,12 +287,22 @@ export function Header() {
             size="sm"
             className="gap-1.5"
             title="실행 (Ctrl+Enter)"
+            data-onboarding="run-button"
           >
             <Play className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">실행</span>
           </Button>
         )}
 
+        <Button
+          variant="outline"
+          size="icon"
+          className="h-9 w-9 sm:hidden"
+          onClick={handleFormat}
+          title="코드 정리 (Ctrl+Shift+F)"
+        >
+          <Code2 className="h-4 w-4" />
+        </Button>
         <Button
           variant="outline"
           size="sm"
@@ -282,7 +314,16 @@ export function Header() {
           정리
         </Button>
 
-        <div className="relative">
+        <div className="relative" data-onboarding="share-button">
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-9 w-9 sm:hidden"
+            onClick={handleShare}
+            title="공유 링크 복사"
+          >
+            <Share2 className="h-4 w-4" />
+          </Button>
           <Button
             variant="outline"
             size="sm"
@@ -307,6 +348,7 @@ export function Header() {
               size="icon"
               className="h-9 w-9"
               title="단축키 도움말"
+              data-onboarding="help-button"
             >
               <HelpCircle className="h-4 w-4" />
             </Button>
@@ -321,6 +363,8 @@ export function Header() {
             <div className="grid gap-3 py-4">
               {[
                 { keys: "Ctrl + Enter", desc: "코드 실행" },
+                { keys: "Ctrl + S", desc: "코드 로컬 저장" },
+                { keys: "Ctrl + /", desc: "주석 토글" },
                 { keys: "Ctrl + Shift + F", desc: "코드 정리 (포맷)" },
                 { keys: "?", desc: "단축키 도움말 열기/닫기" },
               ].map(({ keys, desc }) => (
@@ -332,8 +376,25 @@ export function Header() {
                 </div>
               ))}
             </div>
+            <button
+              onClick={() => {
+                setHelpOpen(false);
+                setOnboardingRequested(true);
+              }}
+              className="flex w-full items-center gap-2 rounded-md border px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+            >
+              <GraduationCap className="h-4 w-4" />
+              튜토리얼 다시 보기
+            </button>
           </DialogContent>
         </Dialog>
+
+        {onboardingRequested && (
+          <OnboardingTutorial
+            forceShow
+            onClose={() => setOnboardingRequested(false)}
+          />
+        )}
 
         <Button
           variant="ghost"

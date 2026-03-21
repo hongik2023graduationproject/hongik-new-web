@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setCode } from "@/store/playgroundSlice";
+import { TabBar } from "./TabBar";
 import {
   HONGIK_LANGUAGE_ID,
   hongikLanguageConfig,
@@ -113,13 +114,14 @@ export function EditorPanel() {
   }, [errorLine]);
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col" data-onboarding="editor">
       <style jsx global>{`
         .error-line-highlight {
-          background-color: rgba(255, 0, 0, 0.1) !important;
+          background-color: rgba(239, 68, 68, 0.15) !important;
+          border-left: 3px solid #ef4444 !important;
         }
         .error-line-glyph {
-          background-color: #e74c3c;
+          background-color: #ef4444;
           border-radius: 50%;
           width: 8px !important;
           height: 8px !important;
@@ -127,6 +129,7 @@ export function EditorPanel() {
           margin-top: 6px;
         }
       `}</style>
+      <TabBar />
       <div className="flex-1 min-h-0">
         <MonacoEditor
           height="100%"
@@ -145,7 +148,7 @@ export function EditorPanel() {
             renderLineHighlight: "line",
             bracketPairColorization: { enabled: true },
             automaticLayout: true,
-            tabSize: 2,
+            tabSize: 4,
             wordWrap: "on",
             glyphMargin: true,
             suggest: {

@@ -30,16 +30,24 @@ export const hongikLanguageConfig: languages.LanguageConfiguration = {
 
 export const hongikTokensProvider: languages.IMonarchLanguage = {
   keywords: [
-    "정수", "실수", "문자", "불린",
-    "함수", "리턴",
+    // Types
+    "정수", "실수", "문자", "불린", "논리", "배열", "사전", "상수",
+    // Control flow
     "만약", "라면", "아니면", "아니라면",
-    "반복", "동안", "멈춤", "계속",
-    "클래스", "자기", "생성자",
+    // Loops
+    "반복", "동안", "부터", "까지", "각각", "에서", "멈춤", "계속",
+    // Functions & Classes
+    "함수", "리턴", "클래스", "자기", "부모", "생성", "생성자", "새로운",
+    // Error handling
     "시도", "실패", "마침내",
-    "참", "거짓", "없음",
-    "그리고", "또는", "아님",
+    // Match/Switch
+    "비교", "경우", "기본",
+    // Module
+    "가져오기",
+    // Literals & Logical
+    "참", "거짓", "없음", "그리고", "또는", "아님",
+    // Built-in
     "출력", "입력", "오류",
-    "새로운", "상수",
   ],
 
   operators: [

@@ -3,17 +3,34 @@
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { clearOutput } from "@/store/playgroundSlice";
 import { Button } from "@/components/ui/button";
-import { Trash2, Copy, Check } from "lucide-react";
-import { useEffect, useRef, useState, useCallback } from "react";
+import {
+  Trash2,
+  Copy,
+  Check,
+  Download,
+  Clock,
+  Search,
+  X,
+} from "lucide-react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
+
+type FilterMode = "all" | "output" | "error";
 
 export function ConsolePanel() {
   const output = useAppSelector((state) => state.playground.output);
   const isRunning = useAppSelector((state) => state.playground.isRunning);
-  const executionTimeMs = useAppSelector((state) => state.playground.executionTimeMs);
+  const executionTimeMs = useAppSelector(
+    (state) => state.playground.executionTimeMs
+  );
   const dispatch = useAppDispatch();
 
   const scrollRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const [copied, setCopied] = useState(false);
+  const [filterMode, setFilterMode] = useState<FilterMode>("all");
+  const [showTimestamp, setShowTimestamp] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showSearch, setShowSearch] = useState(false);
 
   // Auto-scroll to bottom when new output appears
   useEffect(() => {
@@ -22,6 +39,13 @@ export function ConsolePanel() {
       el.scrollTop = el.scrollHeight;
     }
   }, [output]);
+
+  // Focus search input when search is toggled on
+  useEffect(() => {
+    if (showSearch && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [showSearch]);
 
   const handleCopy = useCallback(async () => {
     if (!output) return;
@@ -34,14 +58,76 @@ export function ConsolePanel() {
     }
   }, [output]);
 
-  const lines = output ? output.split("\n") : [];
-  // Remove trailing empty line from split
-  if (lines.length > 0 && lines[lines.length - 1] === "") {
-    lines.pop();
-  }
+  const handleDownload = useCallback(() => {
+    if (!output) return;
+    const blob = new Blob([output], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `hongik-output-${new Date().toISOString().slice(0, 19).replace(/:/g, "-")}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, [output]);
+
+  const toggleSearch = useCallback(() => {
+    setShowSearch((prev) => {
+      if (prev) setSearchQuery("");
+      return !prev;
+    });
+  }, []);
+
+  const allLines = useMemo(() => {
+    if (!output) return [];
+    const lines = output.split("\n");
+    if (lines.length > 0 && lines[lines.length - 1] === "") {
+      lines.pop();
+    }
+    return lines;
+  }, [output]);
+
+  const isErrorLine = (line: string) =>
+    line.startsWith("[에러]") || line.startsWith("[시스템 에러]");
+
+  const isOutputLine = (line: string) => !isErrorLine(line);
+
+  const filteredLines = useMemo(() => {
+    let lines = allLines.map((text, originalIndex) => ({
+      text,
+      originalIndex,
+    }));
+
+    // Apply filter
+    if (filterMode === "error") {
+      lines = lines.filter((l) => isErrorLine(l.text));
+    } else if (filterMode === "output") {
+      lines = lines.filter((l) => isOutputLine(l.text));
+    }
+
+    // Apply search
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      lines = lines.filter((l) => l.text.toLowerCase().includes(query));
+    }
+
+    return lines;
+  }, [allLines, filterMode, searchQuery]);
+
+  const filterButtons: { mode: FilterMode; label: string }[] = [
+    { mode: "all", label: "전체" },
+    { mode: "output", label: "출력" },
+    { mode: "error", label: "에러" },
+  ];
+
+  const now = useMemo(() => {
+    if (!showTimestamp) return "";
+    return new Date().toLocaleTimeString("ko-KR", { hour12: false });
+  }, [showTimestamp, output]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="flex h-full flex-col">
+      {/* Header */}
       <div className="flex items-center justify-between border-b px-4 py-2">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium">콘솔</span>
@@ -68,6 +154,17 @@ export function ConsolePanel() {
               )}
             </Button>
           )}
+          {output && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7"
+              onClick={handleDownload}
+              title="출력 다운로드"
+            >
+              <Download className="h-3.5 w-3.5" />
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="icon"
@@ -79,27 +176,113 @@ export function ConsolePanel() {
           </Button>
         </div>
       </div>
+
+      {/* Toolbar */}
+      {output && (
+        <div className="flex flex-wrap items-center gap-1.5 border-b px-4 py-1.5">
+          {/* Filter buttons */}
+          <div className="flex items-center rounded-md border text-xs">
+            {filterButtons.map(({ mode, label }) => (
+              <button
+                key={mode}
+                onClick={() => setFilterMode(mode)}
+                className={`px-2 py-0.5 transition-colors first:rounded-l-md last:rounded-r-md ${
+                  filterMode === mode
+                    ? "bg-primary text-primary-foreground"
+                    : "hover:bg-muted"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {/* Timestamp toggle */}
+          <Button
+            variant={showTimestamp ? "secondary" : "ghost"}
+            size="sm"
+            className="h-6 gap-1 px-2 text-xs"
+            onClick={() => setShowTimestamp((p) => !p)}
+            title="타임스탬프 표시"
+          >
+            <Clock className="h-3 w-3" />
+            <span className="hidden sm:inline">시간</span>
+          </Button>
+
+          {/* Search toggle */}
+          <Button
+            variant={showSearch ? "secondary" : "ghost"}
+            size="sm"
+            className="h-6 gap-1 px-2 text-xs"
+            onClick={toggleSearch}
+            title="출력 검색"
+          >
+            <Search className="h-3 w-3" />
+            <span className="hidden sm:inline">검색</span>
+          </Button>
+
+          {/* Search input */}
+          {showSearch && (
+            <div className="relative flex items-center">
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="검색..."
+                className="h-6 w-32 rounded-md border bg-background px-2 pr-6 text-xs outline-none focus:ring-1 focus:ring-ring sm:w-40"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-1 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Filter info */}
+          {(filterMode !== "all" || searchQuery) && (
+            <span className="text-xs text-muted-foreground">
+              {filteredLines.length}/{allLines.length}줄
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Output area */}
       <div ref={scrollRef} className="flex-1 overflow-auto bg-muted/30 p-4">
         <pre className="font-mono text-sm whitespace-pre-wrap">
-          {lines.length > 0 ? (
-            lines.map((line, i) => (
+          {filteredLines.length > 0 ? (
+            filteredLines.map(({ text, originalIndex }) => (
               <span
-                key={i}
+                key={originalIndex}
                 className={
-                  line.startsWith("[에러]") || line.startsWith("[시스템 에러]")
+                  isErrorLine(text)
                     ? "text-red-400"
-                    : line.startsWith("[도움말]")
+                    : text.startsWith("[도움말]")
                       ? "text-yellow-400"
                       : ""
                 }
               >
-                <span className="inline-block w-8 text-right mr-3 text-muted-foreground/50 select-none text-xs leading-5">
-                  {i + 1}
+                <span className="inline-block w-8 text-right mr-3 text-muted-foreground/70 select-none text-xs leading-5">
+                  {originalIndex + 1}
                 </span>
-                {line}
+                {showTimestamp && (
+                  <span className="mr-2 text-muted-foreground/50 select-none text-xs">
+                    {now}
+                  </span>
+                )}
+                {searchQuery ? highlightMatch(text, searchQuery) : text}
                 {"\n"}
               </span>
             ))
+          ) : allLines.length > 0 ? (
+            <span className="text-muted-foreground">
+              필터 조건에 맞는 출력이 없습니다.
+            </span>
           ) : (
             <span className="text-muted-foreground">
               실행 버튼을 눌러 결과를 확인하세요. (Ctrl+Enter)
@@ -108,7 +291,8 @@ export function ConsolePanel() {
         </pre>
         {executionTimeMs !== null && output && (
           <div className="mt-2 border-t pt-2 text-xs text-muted-foreground">
-            실행 시간: {executionTimeMs < 1
+            실행 시간:{" "}
+            {executionTimeMs < 1
               ? `${executionTimeMs.toFixed(2)}ms`
               : `${Math.round(executionTimeMs)}ms`}
           </div>
@@ -116,4 +300,39 @@ export function ConsolePanel() {
       </div>
     </div>
   );
+}
+
+/** Highlight search matches within a line */
+function highlightMatch(text: string, query: string): React.ReactNode {
+  if (!query) return text;
+  const lower = text.toLowerCase();
+  const qLower = query.toLowerCase();
+  const idx = lower.indexOf(qLower);
+  if (idx === -1) return text;
+
+  const parts: React.ReactNode[] = [];
+  let cursor = 0;
+  let pos = idx;
+
+  while (pos !== -1) {
+    if (pos > cursor) {
+      parts.push(text.slice(cursor, pos));
+    }
+    parts.push(
+      <mark
+        key={pos}
+        className="rounded-sm bg-yellow-300/40 text-inherit"
+      >
+        {text.slice(pos, pos + query.length)}
+      </mark>
+    );
+    cursor = pos + query.length;
+    pos = lower.indexOf(qLower, cursor);
+  }
+
+  if (cursor < text.length) {
+    parts.push(text.slice(cursor));
+  }
+
+  return <>{parts}</>;
 }
