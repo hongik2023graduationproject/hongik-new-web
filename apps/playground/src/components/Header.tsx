@@ -170,6 +170,8 @@ export function Header() {
 
   const handleFormat = useCallback(() => {
     const formatted = formatCode(code);
+    console.log('[FORMAT] input:', JSON.stringify(code.slice(0, 200)));
+    console.log('[FORMAT] output:', JSON.stringify(formatted.slice(0, 200)));
     dispatch(setCode(formatted));
   }, [code, dispatch]);
 
