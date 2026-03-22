@@ -18,7 +18,23 @@ import {
   isWasmRuntimeAvailable,
   type HongIkInterpreter,
 } from "@hongik/wasm";
-import { formatCode } from "@hongik/core";
+// Inlined formatter to avoid shared-chunk caching issues with @hongik/core
+const DEDENT_KEYWORDS = ['아니면', '실패', '마침내'];
+function formatCode(code: string): string {
+  const lines = code.split('\n');
+  const formatted: string[] = [];
+  let indentLevel = 0;
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) { formatted.push(''); continue; }
+    if (DEDENT_KEYWORDS.some((kw) => trimmed === kw || trimmed.startsWith(kw + ' ') || trimmed.startsWith(kw + ':'))) {
+      indentLevel = Math.max(0, indentLevel - 1);
+    }
+    formatted.push('    '.repeat(indentLevel) + trimmed);
+    if (trimmed.endsWith(':')) { indentLevel++; }
+  }
+  return formatted.join('\n');
+}
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -170,8 +186,6 @@ export function Header() {
 
   const handleFormat = useCallback(() => {
     const formatted = formatCode(code);
-    console.log('[FORMAT] input:', JSON.stringify(code.slice(0, 200)));
-    console.log('[FORMAT] output:', JSON.stringify(formatted.slice(0, 200)));
     dispatch(setCode(formatted));
   }, [code, dispatch]);
 
