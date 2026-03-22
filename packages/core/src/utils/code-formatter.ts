@@ -6,6 +6,7 @@
 const DEDENT_KEYWORDS = ['아니면', '실패', '마침내'];
 
 export function formatCode(code: string): string {
+  console.log('[FORMATTER v2] called, lines:', code.split('\n').length);
   const lines = code.split('\n');
   const formatted: string[] = [];
   let indentLevel = 0;
