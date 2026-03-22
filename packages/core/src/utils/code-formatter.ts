@@ -2,9 +2,8 @@
  * Code formatting utilities for Hong-ik language
  */
 
-const OPEN_BRACES = ['{'];
-const CLOSE_BRACES = ['}'];
-const DEDENT_KEYWORDS = ['아니면', '아니라면', '실패', '마침내'];
+// Keywords that dedent by 1 before being written (continuation of a block)
+const DEDENT_KEYWORDS = ['아니면', '실패', '마침내'];
 
 export function formatCode(code: string): string {
   const lines = code.split('\n');
@@ -19,20 +18,17 @@ export function formatCode(code: string): string {
       continue;
     }
 
-    // Decrease indent for closing braces or dedent keywords
-    if (CLOSE_BRACES.some((b) => trimmed.startsWith(b))) {
-      indentLevel = Math.max(0, indentLevel - 1);
-    } else if (DEDENT_KEYWORDS.some((kw) => trimmed.startsWith(kw))) {
+    // Dedent for continuation keywords (아니면, 실패, 마침내)
+    if (DEDENT_KEYWORDS.some((kw) => trimmed === kw || trimmed.startsWith(kw + ' ') || trimmed.startsWith(kw + ':'))) {
       indentLevel = Math.max(0, indentLevel - 1);
     }
 
-    formatted.push('  '.repeat(indentLevel) + trimmed);
+    formatted.push('    '.repeat(indentLevel) + trimmed);
 
-    // Increase indent after opening braces
-    if (OPEN_BRACES.some((b) => trimmed.endsWith(b))) {
+    // Indent next line if this line opens a block (ends with ':')
+    if (trimmed.endsWith(':')) {
       indentLevel++;
     }
-
   }
 
   return formatted.join('\n');
