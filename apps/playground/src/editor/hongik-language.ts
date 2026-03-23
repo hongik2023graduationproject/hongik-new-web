@@ -127,15 +127,24 @@ export const hongikTokensProvider: languages.IMonarchLanguage = {
     ],
 
     string_double: [
-      [/[^\\"]+/, "string"],
+      [/\{/, "string.interpolation", "@interpolation"],
+      [/[^\\"{]+/, "string"],
       [/\\./, "string.escape"],
       [/"/, "string", "@pop"],
     ],
 
     string_single: [
-      [/[^\\']+/, "string"],
+      [/\{/, "string.interpolation", "@interpolation"],
+      [/[^\\'{]+/, "string"],
       [/\\./, "string.escape"],
       [/'/, "string", "@pop"],
+    ],
+
+    interpolation: [
+      [/[가-힣a-zA-Z_][가-힣a-zA-Z0-9_]*/, "string.interpolation"],
+      [/\./, "string.interpolation"],
+      [/\}/, "string.interpolation", "@pop"],
+      [/./, "string"],
     ],
   },
 };
