@@ -8,6 +8,7 @@ import {
   clearOutput,
   setExecutionTime,
   setErrorLine,
+  setExecutionMode,
   toggleTheme,
   STORAGE_KEY,
 } from "@/store/playgroundSlice";
@@ -80,9 +81,12 @@ export function Header() {
   const executionTimeMs = useAppSelector(
     (state) => state.playground.executionTimeMs
   );
+  const executionMode = useAppSelector(
+    (state) => state.playground.executionMode
+  );
 
   const interpreterRef = useRef<HongIkInterpreter | null>(null);
-  const wasmFailedRef = useRef(false);
+  const wasmFailCountRef = useRef(0);
   const abortControllerRef = useRef<AbortController | null>(null);
   const isRunningRef = useRef(isRunning);
   isRunningRef.current = isRunning;
@@ -90,6 +94,22 @@ export function Header() {
   const [shareToast, setShareToast] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [onboardingRequested, setOnboardingRequested] = useState(false);
+
+  // WASM 사전 로딩: 컴포넌트 마운트 시 백그라운드에서 인터프리터 미리 로드
+  useEffect(() => {
+    if (!isWasmRuntimeAvailable()) return;
+    let cancelled = false;
+    loadInterpreter()
+      .then((interp) => {
+        if (!cancelled) interpreterRef.current = interp;
+      })
+      .catch(() => {
+        // 사전 로딩 실패는 무시 — 실행 시 재시도
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleExampleSelect = (exampleId: string) => {
     const example = examples.find((e) => e.id === exampleId);
@@ -124,27 +144,29 @@ export function Header() {
     abortControllerRef.current = controller;
 
     try {
-      // Try WASM first (if not already known to be unavailable)
-      if (!wasmFailedRef.current && isWasmRuntimeAvailable()) {
+      // Try WASM first (allow retry up to 3 failures)
+      const wasmAvailable = wasmFailCountRef.current < 3 && isWasmRuntimeAvailable();
+      if (wasmAvailable) {
         try {
           if (!interpreterRef.current) {
             interpreterRef.current = await loadInterpreter();
           }
           const result = await interpreterRef.current.execute(code);
           if (controller.signal.aborted) return;
+          wasmFailCountRef.current = 0; // 성공 시 실패 카운트 리셋
           if (result.stdout) dispatch(appendOutput(result.stdout));
           if (result.stderr) {
             dispatch(appendOutput(`[에러] ${result.stderr}`));
             dispatch(setErrorLine(parseErrorLine(result.stderr)));
           }
           dispatch(setExecutionTime(result.executionTime));
-          console.log("[WASM] 브라우저에서 실행됨", result.executionTime + "ms");
+          dispatch(setExecutionMode("wasm"));
           return;
         } catch {
           if (controller.signal.aborted) return;
-          // WASM failed (e.g. worker file not found) - fall through to API
-          wasmFailedRef.current = true;
+          wasmFailCountRef.current++;
           interpreterRef.current = null;
+          // Fall through to API
         }
       }
 
@@ -156,7 +178,7 @@ export function Header() {
         dispatch(setErrorLine(parseErrorLine(result.stderr)));
       }
       dispatch(setExecutionTime(result.executionTime));
-      console.log("[API] 백엔드 서버에서 실행됨", result.executionTime + "ms");
+      dispatch(setExecutionMode("api"));
     } catch (error) {
       if (controller.signal.aborted) return;
       const message = error instanceof Error ? error.message : String(error);
@@ -279,7 +301,18 @@ export function Header() {
 
       <div className="flex items-center gap-2">
         {executionTimeMs !== null && (
-          <span className="text-xs text-muted-foreground hidden sm:inline">
+          <span className="text-xs text-muted-foreground hidden sm:inline-flex items-center gap-1.5">
+            {executionMode && (
+              <span
+                className={`inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide ${
+                  executionMode === "wasm"
+                    ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+                    : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                }`}
+              >
+                {executionMode}
+              </span>
+            )}
             {executionTimeMs < 1
               ? `${executionTimeMs.toFixed(2)}ms`
               : `${Math.round(executionTimeMs)}ms`}

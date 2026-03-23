@@ -1,6 +1,7 @@
 import { createSlice, nanoid, PayloadAction } from "@reduxjs/toolkit";
 
 export type Theme = "light" | "dark";
+export type ExecutionMode = "wasm" | "api" | null;
 
 export const STORAGE_KEY = "hongik-playground-code";
 const THEME_STORAGE_KEY = "hongik-playground-theme";
@@ -76,6 +77,7 @@ interface PlaygroundState {
   theme: Theme;
   executionTimeMs: number | null;
   errorLine: number | null;
+  executionMode: ExecutionMode;
 }
 
 const defaultTab = createDefaultTab();
@@ -89,6 +91,7 @@ const initialState: PlaygroundState = {
   theme: "dark",
   executionTimeMs: null,
   errorLine: null,
+  executionMode: null,
 };
 
 function syncCode(state: PlaygroundState) {
@@ -130,6 +133,10 @@ const playgroundSlice = createSlice({
       state.output = "";
       state.executionTimeMs = null;
       state.errorLine = null;
+      state.executionMode = null;
+    },
+    setExecutionMode(state, action: PayloadAction<ExecutionMode>) {
+      state.executionMode = action.payload;
     },
     setIsRunning(state, action: PayloadAction<boolean>) {
       state.isRunning = action.payload;
@@ -213,6 +220,7 @@ export const {
   setErrorLine,
   toggleTheme,
   setTheme,
+  setExecutionMode,
   addTab,
   removeTab,
   switchTab,
