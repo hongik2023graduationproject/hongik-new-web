@@ -29,25 +29,41 @@ export const hongikLanguageConfig: languages.LanguageConfiguration = {
 };
 
 export const hongikTokensProvider: languages.IMonarchLanguage = {
-  keywords: [
-    // Types
-    "정수", "실수", "문자", "불린", "논리", "배열", "사전", "상수",
-    // Control flow
+  controlKeywords: [
     "만약", "라면", "아니면", "아니라면",
-    // Loops
     "반복", "동안", "부터", "까지", "각각", "에서", "멈춤", "계속",
-    // Functions & Classes
-    "함수", "리턴", "클래스", "자기", "부모", "생성", "생성자", "새로운",
-    // Error handling
-    "시도", "실패", "마침내",
-    // Match/Switch
+    "리턴",
     "비교", "경우", "기본",
-    // Module
-    "가져오기",
-    // Literals & Logical
-    "참", "거짓", "없음", "그리고", "또는", "아님",
-    // Built-in
+    "시도", "실패", "마침내",
+    "그리고", "또는", "아님",
+  ],
+
+  typeKeywords: [
+    "정수", "실수", "문자", "불린", "논리", "배열", "사전", "상수",
+  ],
+
+  declarationKeywords: [
+    "함수", "클래스", "생성", "생성자", "새로운", "가져오기",
+  ],
+
+  selfKeywords: [
+    "자기", "부모",
+  ],
+
+  constantLiterals: [
+    "참", "거짓", "없음",
+  ],
+
+  builtinFunctions: [
     "출력", "입력", "오류",
+    "길이", "타입", "정수변환", "실수변환", "문자변환",
+    "추가", "키목록", "포함", "설정", "삭제", "찾기", "조각", "정렬", "뒤집기",
+    "분리", "대문자", "소문자", "치환", "자르기",
+    "파일읽기", "파일쓰기",
+    "절대값", "제곱근", "최대", "최소", "난수",
+    "매핑", "걸러내기", "줄이기",
+    "사인", "코사인", "탄젠트", "로그", "자연로그", "거듭제곱", "파이", "자연수e",
+    "반올림", "올림", "내림",
   ],
 
   operators: [
@@ -76,9 +92,14 @@ export const hongikTokensProvider: languages.IMonarchLanguage = {
       [/\d+/, "number"],
 
       // Keywords and identifiers
-      [/[가-힣a-zA-Z_]\w*/, {
+      [/[가-힣a-zA-Z_][가-힣a-zA-Z0-9_]*/, {
         cases: {
-          "@keywords": "keyword",
+          "@controlKeywords": "keyword.control",
+          "@typeKeywords": "keyword.type",
+          "@declarationKeywords": "keyword.declaration",
+          "@selfKeywords": "keyword.self",
+          "@constantLiterals": "constant.language",
+          "@builtinFunctions": "support.function",
           "@default": "identifier",
         },
       }],
