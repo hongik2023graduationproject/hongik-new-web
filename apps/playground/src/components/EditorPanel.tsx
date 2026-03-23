@@ -16,14 +16,26 @@ import type { OnMount } from "@monaco-editor/react";
 import { useEffect, useRef, useState, useCallback } from "react";
 import type { editor } from "monaco-editor";
 
-const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
-  ssr: false,
-  loading: () => (
-    <div className="flex h-full items-center justify-center bg-muted/50">
-      <p className="text-muted-foreground">에디터 로딩 중...</p>
-    </div>
-  ),
-});
+const MonacoEditor = dynamic(
+  () =>
+    Promise.all([
+      import("@monaco-editor/react"),
+      import("monaco-editor"),
+    ]).then(([reactMod, monacoMod]) => {
+      // CDN 대신 로컬 monaco-editor 패키지에서 직접 로드
+      // (COEP 헤더가 CDN <script> 태그를 차단하는 문제 해결)
+      reactMod.loader.config({ monaco: monacoMod });
+      return reactMod;
+    }),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-full items-center justify-center bg-muted/50">
+        <p className="text-muted-foreground">에디터 로딩 중...</p>
+      </div>
+    ),
+  },
+);
 
 let completionsRegistered = false;
 

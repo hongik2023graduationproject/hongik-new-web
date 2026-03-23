@@ -1,4 +1,5 @@
 const path = require('path');
+const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -8,7 +9,7 @@ const nextConfig = {
     // Required for pnpm monorepo: trace files outside the app directory
     outputFileTracingRoot: path.join(__dirname, '../../'),
   },
-  webpack(config) {
+  webpack(config, { isServer }) {
     // WASM file support
     config.experiments = {
       ...config.experiments,
@@ -19,14 +20,30 @@ const nextConfig = {
       type: "asset/resource",
     });
 
-    // Monaco Editor: only bundle required languages/features to reduce bundle size
-    config.resolve.alias = {
-      ...config.resolve.alias,
-    };
+    // Monaco Editor: self-host instead of CDN to avoid COEP issues
+    if (!isServer) {
+      config.plugins.push(
+        new MonacoWebpackPlugin({
+          // Only include the editor worker (no extra language workers needed)
+          languages: [],
+          features: [
+            'bracketMatching',
+            'clipboard',
+            'find',
+            'folding',
+            'hover',
+            'indentation',
+            'suggest',
+            'wordHighlighter',
+            'wordOperations',
+          ],
+        })
+      );
+    }
 
     return config;
   },
-  // Allow loading Monaco Editor web workers from CDN
+  // COEP/COOP headers for SharedArrayBuffer (WASM)
   async headers() {
     return [
       {
