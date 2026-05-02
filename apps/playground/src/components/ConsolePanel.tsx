@@ -20,13 +20,27 @@ const isErrorLine = (line: string) =>
   line.startsWith("[에러]") || line.startsWith("[시스템 에러]");
 const isOutputLine = (line: string) => !isErrorLine(line);
 
+const TIME_FORMATTER = new Intl.DateTimeFormat("ko-KR", {
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
+  hour12: false,
+});
+const formatTime = (ts: number) => TIME_FORMATTER.format(ts);
+
 export function ConsolePanel() {
-  const output = useAppSelector((state) => state.playground.output);
+  const outputLines = useAppSelector((state) => state.playground.outputLines);
   const isRunning = useAppSelector((state) => state.playground.isRunning);
   const executionTimeMs = useAppSelector(
     (state) => state.playground.executionTimeMs
   );
   const dispatch = useAppDispatch();
+
+  const hasOutput = outputLines.length > 0;
+  const joinedOutput = useMemo(
+    () => outputLines.map((l) => l.text).join("\n"),
+    [outputLines]
+  );
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -42,7 +56,7 @@ export function ConsolePanel() {
     if (el) {
       el.scrollTop = el.scrollHeight;
     }
-  }, [output]);
+  }, [outputLines]);
 
   // Focus search input when search is toggled on
   useEffect(() => {
@@ -52,19 +66,19 @@ export function ConsolePanel() {
   }, [showSearch]);
 
   const handleCopy = useCallback(async () => {
-    if (!output) return;
+    if (!hasOutput) return;
     try {
-      await navigator.clipboard.writeText(output);
+      await navigator.clipboard.writeText(joinedOutput);
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch {
       // fallback: ignore
     }
-  }, [output]);
+  }, [hasOutput, joinedOutput]);
 
   const handleDownload = useCallback(() => {
-    if (!output) return;
-    const blob = new Blob([output], { type: "text/plain;charset=utf-8" });
+    if (!hasOutput) return;
+    const blob = new Blob([joinedOutput], { type: "text/plain;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -73,7 +87,7 @@ export function ConsolePanel() {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-  }, [output]);
+  }, [hasOutput, joinedOutput]);
 
   const toggleSearch = useCallback(() => {
     setShowSearch((prev) => {
@@ -82,20 +96,18 @@ export function ConsolePanel() {
     });
   }, []);
 
-  const allLines = useMemo(() => {
-    if (!output) return [];
-    const lines = output.split("\n");
-    if (lines.length > 0 && lines[lines.length - 1] === "") {
-      lines.pop();
-    }
-    return lines;
-  }, [output]);
+  const allLines = useMemo(
+    () =>
+      outputLines.map((line, originalIndex) => ({
+        text: line.text,
+        ts: line.ts,
+        originalIndex,
+      })),
+    [outputLines]
+  );
 
   const filteredLines = useMemo(() => {
-    let lines = allLines.map((text, originalIndex) => ({
-      text,
-      originalIndex,
-    }));
+    let lines = allLines;
 
     // Apply filter
     if (filterMode === "error") {
@@ -119,11 +131,6 @@ export function ConsolePanel() {
     { mode: "error", label: "에러" },
   ];
 
-  const now = useMemo(() => {
-    if (!showTimestamp) return "";
-    return new Date().toLocaleTimeString("ko-KR", { hour12: false });
-  }, [showTimestamp, output]); // eslint-disable-line react-hooks/exhaustive-deps
-
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
@@ -138,7 +145,7 @@ export function ConsolePanel() {
           )}
         </div>
         <div className="flex items-center gap-1">
-          {output && (
+          {hasOutput && (
             <Button
               variant="ghost"
               size="icon"
@@ -153,7 +160,7 @@ export function ConsolePanel() {
               )}
             </Button>
           )}
-          {output && (
+          {hasOutput && (
             <Button
               variant="ghost"
               size="icon"
@@ -177,7 +184,7 @@ export function ConsolePanel() {
       </div>
 
       {/* Toolbar */}
-      {output && (
+      {hasOutput && (
         <div className="flex flex-wrap items-center gap-1.5 border-b px-4 py-1.5">
           {/* Filter buttons */}
           <div className="flex items-center rounded-md border text-xs">
@@ -255,7 +262,7 @@ export function ConsolePanel() {
       <div ref={scrollRef} className="flex-1 overflow-auto bg-muted/30 p-4">
         <pre className="font-mono text-sm whitespace-pre-wrap">
           {filteredLines.length > 0 ? (
-            filteredLines.map(({ text, originalIndex }) => (
+            filteredLines.map(({ text, ts, originalIndex }) => (
               <span
                 key={originalIndex}
                 className={
@@ -271,7 +278,7 @@ export function ConsolePanel() {
                 </span>
                 {showTimestamp && (
                   <span className="mr-2 text-muted-foreground/50 select-none text-xs">
-                    {now}
+                    {formatTime(ts)}
                   </span>
                 )}
                 {searchQuery ? highlightMatch(text, searchQuery) : text}
@@ -288,7 +295,7 @@ export function ConsolePanel() {
             </span>
           )}
         </pre>
-        {executionTimeMs !== null && output && (
+        {executionTimeMs !== null && hasOutput && (
           <div className="mt-2 border-t pt-2 text-xs text-muted-foreground">
             실행 시간:{" "}
             {executionTimeMs < 1

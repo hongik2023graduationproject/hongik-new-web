@@ -18,7 +18,7 @@
   "scripts": {
     "dev": "tsc --watch",
     "build": "tsc && tsc -p tsconfig.worker.json",
-    "test": "vitest --passWithNoTests",
+    "test": "vitest run",
     "lint": "eslint . --ext .ts,.tsx --max-warnings 0",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist"

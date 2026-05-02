@@ -10,7 +10,6 @@ import {
   setErrorLine,
   setExecutionMode,
   toggleTheme,
-  STORAGE_KEY,
 } from "@/store/playgroundSlice";
 import { examples, categories } from "@/data/examples";
 import { executeViaAPI, shareCode } from "@/lib/api";
@@ -212,15 +211,6 @@ export function Header() {
     dispatch(setCode(formatted));
   }, [code, dispatch]);
 
-  const tabs = useAppSelector((state) => state.playground.tabs);
-  const activeTabId = useAppSelector((state) => state.playground.activeTabId);
-
-  const handleSave = useCallback(() => {
-    localStorage.setItem(STORAGE_KEY, code);
-    localStorage.setItem("hongik-playground-tabs", JSON.stringify(tabs));
-    localStorage.setItem("hongik-playground-active-tab", activeTabId);
-  }, [code, tabs, activeTabId]);
-
   // Keyboard shortcuts
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -229,10 +219,9 @@ export function Header() {
         e.preventDefault();
         handleRun();
       }
-      // Ctrl+S: save to localStorage
+      // Ctrl+S: suppress browser save dialog (persistence is automatic via middleware)
       if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key === "s") {
         e.preventDefault();
-        handleSave();
       }
       // Ctrl+Shift+F: format
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "F") {
@@ -256,7 +245,7 @@ export function Header() {
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [handleRun, handleFormat, handleSave]);
+  }, [handleRun, handleFormat]);
 
   // Cleanup interpreter on unmount
   useEffect(() => {

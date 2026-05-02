@@ -4,9 +4,9 @@ export type Theme = "light" | "dark";
 export type ExecutionMode = "wasm" | "api" | null;
 
 export const STORAGE_KEY = "hongik-playground-code";
-const THEME_STORAGE_KEY = "hongik-playground-theme";
-const TABS_STORAGE_KEY = "hongik-playground-tabs";
-const ACTIVE_TAB_STORAGE_KEY = "hongik-playground-active-tab";
+export const THEME_STORAGE_KEY = "hongik-playground-theme";
+export const TABS_STORAGE_KEY = "hongik-playground-tabs";
+export const ACTIVE_TAB_STORAGE_KEY = "hongik-playground-active-tab";
 
 const DEFAULT_CODE = `// 홍익 플레이그라운드에 오신 것을 환영합니다!
 // 예제를 선택하거나 직접 코드를 작성해보세요.
@@ -27,54 +27,65 @@ function createDefaultTab(): Tab {
   return { id: nanoid(), name: "메인", code: DEFAULT_CODE };
 }
 
-function loadSavedTabs(): Tab[] {
-  if (typeof window === "undefined") return [createDefaultTab()];
+export interface RehydrateState {
+  tabs: Tab[];
+  activeTabId: string;
+  theme: Theme;
+}
+
+/**
+ * Read persisted state from localStorage. Side-effecting; call from a client
+ * effect (e.g. in <Provider />) and dispatch the result via initFromStorage.
+ */
+export function loadPersistedState(): RehydrateState {
+  if (typeof window === "undefined") {
+    const fallbackTab = createDefaultTab();
+    return { tabs: [fallbackTab], activeTabId: fallbackTab.id, theme: "dark" };
+  }
+
+  let tabs: Tab[] | null = null;
   try {
     const stored = localStorage.getItem(TABS_STORAGE_KEY);
     if (stored) {
       const parsed = JSON.parse(stored) as Tab[];
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      if (Array.isArray(parsed) && parsed.length > 0) tabs = parsed;
     }
   } catch {
-    // ignore
+    // Corrupted JSON — fall through to default.
   }
-  // Migrate from old single-code storage
-  const oldCode = localStorage.getItem(STORAGE_KEY);
-  const tab = createDefaultTab();
-  if (oldCode) tab.code = oldCode;
-  return [tab];
+  if (!tabs) {
+    const oldCode = localStorage.getItem(STORAGE_KEY);
+    const tab = createDefaultTab();
+    if (oldCode) tab.code = oldCode;
+    tabs = [tab];
+  }
+
+  const savedActive = localStorage.getItem(ACTIVE_TAB_STORAGE_KEY);
+  const activeTabId =
+    savedActive && tabs.some((t) => t.id === savedActive)
+      ? savedActive
+      : tabs[0]!.id;
+
+  const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+  const theme: Theme = savedTheme === "light" ? "light" : "dark";
+
+  return { tabs, activeTabId, theme };
 }
 
-function loadSavedActiveTabId(tabs: Tab[]): string {
-  // Caller invariant: `tabs` always has length >= 1 (loadSavedTabs falls back to a default tab).
-  const fallback = tabs[0]!.id;
-  if (typeof window === "undefined") return fallback;
-  const saved = localStorage.getItem(ACTIVE_TAB_STORAGE_KEY);
-  if (saved && tabs.some((t) => t.id === saved)) return saved;
-  return fallback;
+export interface OutputLine {
+  text: string;
+  /** Wall-clock timestamp (ms epoch) captured when the line was appended. */
+  ts: number;
 }
 
-function loadSavedTheme(): Theme {
-  if (typeof window === "undefined") return "dark";
-  const saved = localStorage.getItem(THEME_STORAGE_KEY);
-  return saved === "light" ? "light" : "dark";
-}
-
-function saveTabs(tabs: Tab[], activeTabId: string) {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(TABS_STORAGE_KEY, JSON.stringify(tabs));
-  localStorage.setItem(ACTIVE_TAB_STORAGE_KEY, activeTabId);
-  // Keep legacy key in sync for backwards compat
-  const active = tabs.find((t) => t.id === activeTabId);
-  if (active) localStorage.setItem(STORAGE_KEY, active.code);
-}
-
-interface PlaygroundState {
+export interface PlaygroundState {
   tabs: Tab[];
   activeTabId: string;
   /** Current active tab's code — kept in sync as a convenience alias */
   code: string;
-  output: string;
+  outputLines: OutputLine[];
+  /** Total characters across `outputLines`, used to enforce the truncation cap cheaply. */
+  outputCharCount: number;
   isRunning: boolean;
   theme: Theme;
   executionTimeMs: number | null;
@@ -82,13 +93,17 @@ interface PlaygroundState {
   executionMode: ExecutionMode;
 }
 
+const MAX_OUTPUT_LENGTH = 100_000;
+const TRUNCATION_NOTICE = "[출력이 100,000자를 초과하여 잘렸습니다]";
+
 const defaultTab = createDefaultTab();
 
 const initialState: PlaygroundState = {
   tabs: [defaultTab],
   activeTabId: defaultTab.id,
   code: DEFAULT_CODE,
-  output: "",
+  outputLines: [],
+  outputCharCount: 0,
   isRunning: false,
   theme: "dark",
   executionTimeMs: null,
@@ -105,10 +120,10 @@ const playgroundSlice = createSlice({
   name: "playground",
   initialState,
   reducers: {
-    initFromStorage(state) {
-      state.tabs = loadSavedTabs();
-      state.activeTabId = loadSavedActiveTabId(state.tabs);
-      state.theme = loadSavedTheme();
+    initFromStorage(state, action: PayloadAction<RehydrateState>) {
+      state.tabs = action.payload.tabs;
+      state.activeTabId = action.payload.activeTabId;
+      state.theme = action.payload.theme;
       syncCode(state);
     },
     setCode(state, action: PayloadAction<string>) {
@@ -116,23 +131,26 @@ const playgroundSlice = createSlice({
       const tab = state.tabs.find((t) => t.id === state.activeTabId);
       if (tab) tab.code = action.payload;
     },
-    setOutput(state, action: PayloadAction<string>) {
-      state.output = action.payload;
-    },
     appendOutput(state, action: PayloadAction<string>) {
-      const MAX_OUTPUT_LENGTH = 100_000;
-      if (state.output.length >= MAX_OUTPUT_LENGTH) return;
-      const next = state.output + action.payload + "\n";
-      if (next.length > MAX_OUTPUT_LENGTH) {
-        state.output =
-          next.slice(0, MAX_OUTPUT_LENGTH) +
-          "\n[출력이 100,000자를 초과하여 잘렸습니다]";
-      } else {
-        state.output = next;
+      if (state.outputCharCount >= MAX_OUTPUT_LENGTH) return;
+      const ts = Date.now();
+      const lines = action.payload.split("\n");
+      // Drop a trailing empty produced by a payload ending in '\n'; preserve genuine blank lines mid-payload.
+      if (lines.length > 1 && lines[lines.length - 1] === "") lines.pop();
+
+      for (const text of lines) {
+        if (state.outputCharCount >= MAX_OUTPUT_LENGTH) {
+          state.outputLines.push({ text: TRUNCATION_NOTICE, ts });
+          state.outputCharCount += TRUNCATION_NOTICE.length;
+          return;
+        }
+        state.outputLines.push({ text, ts });
+        state.outputCharCount += text.length + 1; // +1 for the implicit newline
       }
     },
     clearOutput(state) {
-      state.output = "";
+      state.outputLines = [];
+      state.outputCharCount = 0;
       state.executionTimeMs = null;
       state.errorLine = null;
       state.executionMode = null;
@@ -151,15 +169,9 @@ const playgroundSlice = createSlice({
     },
     toggleTheme(state) {
       state.theme = state.theme === "dark" ? "light" : "dark";
-      if (typeof window !== "undefined") {
-        localStorage.setItem(THEME_STORAGE_KEY, state.theme);
-      }
     },
     setTheme(state, action: PayloadAction<Theme>) {
       state.theme = action.payload;
-      if (typeof window !== "undefined") {
-        localStorage.setItem(THEME_STORAGE_KEY, action.payload);
-      }
     },
     // --- Tab actions ---
     addTab(state) {
@@ -171,7 +183,6 @@ const playgroundSlice = createSlice({
       state.tabs.push(newTab);
       state.activeTabId = newTab.id;
       syncCode(state);
-      saveTabs(state.tabs, state.activeTabId);
     },
     removeTab(state, action: PayloadAction<string>) {
       if (state.tabs.length <= 1) return; // keep at least 1
@@ -184,20 +195,17 @@ const playgroundSlice = createSlice({
         state.activeTabId = next.id;
       }
       syncCode(state);
-      saveTabs(state.tabs, state.activeTabId);
     },
     switchTab(state, action: PayloadAction<string>) {
       if (state.tabs.some((t) => t.id === action.payload)) {
         state.activeTabId = action.payload;
         syncCode(state);
-        saveTabs(state.tabs, state.activeTabId);
       }
     },
     renameTab(state, action: PayloadAction<{ id: string; name: string }>) {
       const tab = state.tabs.find((t) => t.id === action.payload.id);
       if (tab) {
         tab.name = action.payload.name || tab.name;
-        saveTabs(state.tabs, state.activeTabId);
       }
     },
     updateTabCode(
@@ -216,7 +224,6 @@ const playgroundSlice = createSlice({
 export const {
   initFromStorage,
   setCode,
-  setOutput,
   appendOutput,
   clearOutput,
   setIsRunning,

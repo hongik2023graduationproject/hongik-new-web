@@ -1,7 +1,11 @@
 "use client";
 
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
-import { initFromStorage, setCode, STORAGE_KEY } from "@/store/playgroundSlice";
+import {
+  initFromStorage,
+  loadPersistedState,
+  setCode,
+} from "@/store/playgroundSlice";
 import { fetchSharedCode } from "@/lib/api";
 import { Header } from "./Header";
 import { EditorPanel } from "./EditorPanel";
@@ -29,25 +33,7 @@ function loadRatio(): number {
 export function Playground() {
   const dispatch = useAppDispatch();
   const theme = useAppSelector((state) => state.playground.theme);
-  const tabs = useAppSelector((state) => state.playground.tabs);
-  const activeTabId = useAppSelector((state) => state.playground.activeTabId);
   const searchParams = useSearchParams();
-  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Debounced localStorage save for tabs (500ms)
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-    saveTimerRef.current = setTimeout(() => {
-      localStorage.setItem("hongik-playground-tabs", JSON.stringify(tabs));
-      localStorage.setItem("hongik-playground-active-tab", activeTabId);
-      const active = tabs.find((t) => t.id === activeTabId);
-      if (active) localStorage.setItem(STORAGE_KEY, active.code);
-    }, 500);
-    return () => {
-      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-    };
-  }, [tabs, activeTabId]);
 
   // Panel resize state
   const [leftRatio, setLeftRatio] = useState(DEFAULT_RATIO);
@@ -114,7 +100,7 @@ export function Playground() {
   }, []);
 
   useEffect(() => {
-    dispatch(initFromStorage());
+    dispatch(initFromStorage(loadPersistedState()));
 
     // URL ?share=TOKEN: fetch shared code from API
     const shareToken = searchParams.get("share");

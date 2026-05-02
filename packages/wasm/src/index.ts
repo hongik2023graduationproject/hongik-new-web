@@ -23,7 +23,6 @@ export interface HongIkInterpreter {
 
 export interface ExecuteOptions {
     timeoutMs?: number;
-    maxMemoryBytes?: number;
 }
 
 export interface TokenInfo {
@@ -36,7 +35,7 @@ export interface TokenInfo {
 interface ExecuteResultJson {
     success: boolean;
     output: string;
-    result: string | null;
+    result?: string | null;
     error?: {
         type: string;
         typeCode: number;
@@ -217,7 +216,6 @@ export async function loadInterpreter(
                 type: 'execute',
                 code,
                 timeoutMs: options?.timeoutMs,
-                maxMemoryBytes: options?.maxMemoryBytes,
             } as Omit<WorkerRequest, 'id'>);
 
             const executionTime = performance.now() - startTime;

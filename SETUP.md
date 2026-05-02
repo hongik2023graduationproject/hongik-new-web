@@ -131,8 +131,26 @@ pnpm dev
 # 4. 빌드 테스트
 pnpm build
 
-# 5. 테스트 실행 (아직 테스트 없음)
+# 5. 테스트 실행
 pnpm test
+```
+
+### 🚨 트러블슈팅: `Cannot find module 'next/dist/...'`
+
+`pnpm dev` 또는 `pnpm build` 실행 시 다음과 비슷한 에러가 보이면:
+
+```
+Error: Cannot find module './impl'
+Error: Cannot find module 'next/dist/pages/_app'
+```
+
+`node_modules/.pnpm/next@.../node_modules/next/` 디렉터리는 만들어졌지만 안의
+파일이 빈 상태입니다 (Windows + pnpm 10 + Next 14.1 조합에서 가끔 발생). lockfile은
+정상이라 `pnpm install`이 변화 없음으로 판단하고 재추출하지 않으므로, 한 번
+강제로 재설치해야 합니다:
+
+```bash
+pnpm install --force
 ```
 
 ---

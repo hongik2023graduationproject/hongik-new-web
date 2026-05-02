@@ -18,7 +18,7 @@ interface HongIkEmscriptenModule {
 
 interface HongIkInterpreterInstance {
     execute(code: string): string;
-    executeWithLimits(code: string, timeoutMs: number, maxMemoryBytes: number): string;
+    executeWithTimeout(code: string, timeoutMs: number): string;
     getTokens(code: string): string;
     reset(): void;
     writeFile(path: string, content: string): void;
@@ -67,16 +67,9 @@ async function handleMessage(msg: WorkerRequest): Promise<WorkerResponse> {
             case 'execute': {
                 const interp = requireInterpreter(id);
                 if (!('execute' in interp)) return interp as WorkerResponse;
-                let result: string;
-                if (msg.timeoutMs !== undefined || msg.maxMemoryBytes !== undefined) {
-                    result = interp.executeWithLimits(
-                        msg.code,
-                        msg.timeoutMs ?? 5000,
-                        msg.maxMemoryBytes ?? 33554432,
-                    );
-                } else {
-                    result = interp.execute(msg.code);
-                }
+                const result = msg.timeoutMs !== undefined
+                    ? interp.executeWithTimeout(msg.code, msg.timeoutMs)
+                    : interp.execute(msg.code);
                 return { id, type: 'execute', result };
             }
 

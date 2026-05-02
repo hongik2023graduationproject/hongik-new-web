@@ -4,7 +4,7 @@
 
 export type WorkerRequest =
     | { id: number; type: 'init'; wasmUrl?: string }
-    | { id: number; type: 'execute'; code: string; timeoutMs?: number; maxMemoryBytes?: number }
+    | { id: number; type: 'execute'; code: string; timeoutMs?: number }
     | { id: number; type: 'getTokens'; code: string }
     | { id: number; type: 'reset' }
     | { id: number; type: 'writeFile'; path: string; content: string }
