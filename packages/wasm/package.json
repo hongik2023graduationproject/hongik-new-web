@@ -19,14 +19,18 @@
     "dev": "tsc --watch",
     "build": "tsc && tsc -p tsconfig.worker.json",
     "test": "vitest --passWithNoTests",
+    "lint": "eslint . --ext .ts,.tsx --max-warnings 0",
+    "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist"
   },
   "dependencies": {
     "@hongik/core": "workspace:*"
   },
   "devDependencies": {
+    "@hongik/eslint-config": "workspace:*",
     "@types/node": "^20.10.0",
     "@vitest/coverage-v8": "^1.0.0",
+    "eslint": "^8.57.0",
     "typescript": "^5.3.0",
     "vitest": "^1.0.0"
   }

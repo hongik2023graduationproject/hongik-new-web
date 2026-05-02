@@ -16,6 +16,10 @@ import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 
 type FilterMode = "all" | "output" | "error";
 
+const isErrorLine = (line: string) =>
+  line.startsWith("[에러]") || line.startsWith("[시스템 에러]");
+const isOutputLine = (line: string) => !isErrorLine(line);
+
 export function ConsolePanel() {
   const output = useAppSelector((state) => state.playground.output);
   const isRunning = useAppSelector((state) => state.playground.isRunning);
@@ -86,11 +90,6 @@ export function ConsolePanel() {
     }
     return lines;
   }, [output]);
-
-  const isErrorLine = (line: string) =>
-    line.startsWith("[에러]") || line.startsWith("[시스템 에러]");
-
-  const isOutputLine = (line: string) => !isErrorLine(line);
 
   const filteredLines = useMemo(() => {
     let lines = allLines.map((text, originalIndex) => ({

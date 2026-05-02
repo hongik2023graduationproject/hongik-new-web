@@ -25,7 +25,7 @@ export class ErrorBoundary extends React.Component<
     window.location.reload();
   };
 
-  render() {
+  override render() {
     if (this.state.hasError) {
       return (
         <div className="flex h-screen flex-col items-center justify-center gap-4 bg-background text-foreground p-8">

@@ -148,11 +148,24 @@ export function Playground() {
         <div className="overflow-hidden" style={{ width: `${leftRatio}%` }}>
           <EditorPanel />
         </div>
+        {/* WAI-ARIA pattern for a draggable splitter: focusable separator with orientation. */}
+        {/* eslint-disable jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/no-noninteractive-tabindex */}
         <div
+          role="separator"
+          aria-orientation="vertical"
+          aria-label="에디터와 콘솔 영역 크기 조절"
+          tabIndex={0}
           onMouseDown={handleMouseDown}
           onDoubleClick={handleDoubleClick}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              handleDoubleClick();
+            }
+          }}
           className="group relative flex w-1 shrink-0 cursor-col-resize items-center justify-center bg-border transition-colors hover:bg-primary/30"
         >
+          {/* eslint-enable jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/no-noninteractive-tabindex */}
           <div className="absolute z-10 h-8 w-1 rounded-full bg-muted-foreground/40 transition-colors group-hover:bg-primary" />
         </div>
         <div className="flex-1 overflow-hidden">

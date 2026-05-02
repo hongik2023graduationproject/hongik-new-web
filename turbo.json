@@ -26,6 +26,15 @@
       "cache": false
     },
     "lint": {
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": []
+    },
+    "typecheck": {
+      "dependsOn": [
+        "^build"
+      ],
       "outputs": []
     },
     "clean": {

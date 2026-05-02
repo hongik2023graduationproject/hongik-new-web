@@ -70,7 +70,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 function parseErrorLine(stderr: string): number | null {
   const match =
     stderr.match(/(?:줄|line|Line)\s*(\d+)/i) || stderr.match(/\[(\d+):\d+\]/);
-  return match ? parseInt(match[1], 10) : null;
+  const captured = match?.[1];
+  return captured ? parseInt(captured, 10) : null;
 }
 
 export function Header() {

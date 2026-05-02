@@ -88,7 +88,7 @@ export const hongikTokensProvider: languages.IMonarchLanguage = {
       [/'/, "string", "@string_single"],
 
       // Numbers
-      [/\d*\.\d+([eE][\-+]?\d+)?/, "number.float"],
+      [/\d*\.\d+([eE][-+]?\d+)?/, "number.float"],
       [/\d+/, "number"],
 
       // Keywords and identifiers

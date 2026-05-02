@@ -1,3 +1,4 @@
+import type * as MonacoEditor from "monaco-editor";
 import type { languages, editor, IRange } from "monaco-editor";
 
 /**
@@ -503,7 +504,7 @@ const snippetCompletions: {
  * Register the Hong-ik CompletionItemProvider with Monaco
  */
 export function registerHongikCompletions(
-  monacoInstance: typeof import("monaco-editor"),
+  monacoInstance: typeof MonacoEditor,
   languageId: string
 ): void {
   monacoInstance.languages.registerCompletionItemProvider(languageId, {

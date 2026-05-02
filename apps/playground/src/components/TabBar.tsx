@@ -43,12 +43,21 @@ export function TabBar() {
         return (
           <div
             key={tab.id}
+            role="tab"
+            aria-selected={isActive}
+            tabIndex={0}
             className={`group flex items-center gap-1 border-r px-3 py-1.5 text-sm cursor-pointer select-none shrink-0 ${
               isActive
                 ? "bg-background text-foreground border-b-2 border-b-primary"
                 : "text-muted-foreground hover:bg-muted/50"
             }`}
             onClick={() => dispatch(switchTab(tab.id))}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                dispatch(switchTab(tab.id));
+              }
+            }}
             onDoubleClick={() => handleDoubleClick(tab.id, tab.name)}
           >
             {editingId === tab.id ? (

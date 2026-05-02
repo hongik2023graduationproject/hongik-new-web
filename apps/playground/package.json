@@ -6,11 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "echo \"lint skipped (no eslint config)\""
+    "lint": "next lint --dir src --max-warnings 0",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@hongik/core": "workspace:*",
     "@hongik/wasm": "workspace:*",
+    "zod": "^3.22.4",
     "@monaco-editor/react": "^4.6.0",
     "@radix-ui/react-dialog": "^1.1.0",
     "@radix-ui/react-select": "^2.0.0",
@@ -30,10 +32,12 @@
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
+    "@hongik/eslint-config": "workspace:*",
     "@types/node": "^20.10.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "autoprefixer": "^10.4.16",
+    "eslint": "^8.57.0",
     "monaco-editor-webpack-plugin": "^7.1.1",
     "postcss": "^8.4.32",
     "tailwindcss": "^3.4.0",

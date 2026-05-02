@@ -82,6 +82,10 @@ export function OnboardingTutorial({
   const measureTarget = useCallback(() => {
     if (!visible) return;
     const step = steps[currentStep];
+    if (!step) {
+      setTargetRect(null);
+      return;
+    }
     const el = document.querySelector(`[data-onboarding="${step.target}"]`);
     if (el) {
       const rect = el.getBoundingClientRect();
@@ -113,6 +117,7 @@ export function OnboardingTutorial({
       if (!tooltip) return;
       const tRect = tooltip.getBoundingClientRect();
       const step = steps[currentStep];
+      if (!step) return;
       const gap = 12;
       let top = 0;
       let left = 0;
@@ -212,9 +217,11 @@ export function OnboardingTutorial({
         />
       </svg>
 
-      {/* Clickable overlay to skip */}
-      <div
-        className="absolute inset-0"
+      {/* Clickable overlay to skip — duplicates the keyboard ESC affordance for pointer users */}
+      <button
+        type="button"
+        aria-label="튜토리얼 닫기"
+        className="absolute inset-0 cursor-default"
         onClick={handleClose}
         style={{ pointerEvents: "auto" }}
       />
@@ -233,9 +240,13 @@ export function OnboardingTutorial({
         />
       )}
 
-      {/* Tooltip */}
+      {/* Tooltip — onClick only stops bubbling so the backdrop button doesn't dismiss the dialog. */}
+      {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions */}
       <div
         ref={tooltipRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="온보딩 튜토리얼"
         className="absolute z-[10000] w-72 sm:w-80 rounded-xl border bg-card p-4 shadow-xl transition-all duration-300 ease-in-out"
         style={{
           top: tooltipPos?.top ?? -9999,
@@ -250,10 +261,10 @@ export function OnboardingTutorial({
             {currentStep + 1} / {steps.length}
           </p>
           <h3 className="text-sm font-semibold text-foreground">
-            {steps[currentStep].title}
+            {steps[currentStep]?.title}
           </h3>
           <p className="mt-1 text-sm text-muted-foreground">
-            {steps[currentStep].description}
+            {steps[currentStep]?.description}
           </p>
         </div>
 

@@ -1,4 +1,4 @@
-import { createSlice, nanoid, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, nanoid, type PayloadAction } from "@reduxjs/toolkit";
 
 export type Theme = "light" | "dark";
 export type ExecutionMode = "wasm" | "api" | null;
@@ -46,10 +46,12 @@ function loadSavedTabs(): Tab[] {
 }
 
 function loadSavedActiveTabId(tabs: Tab[]): string {
-  if (typeof window === "undefined") return tabs[0].id;
+  // Caller invariant: `tabs` always has length >= 1 (loadSavedTabs falls back to a default tab).
+  const fallback = tabs[0]!.id;
+  if (typeof window === "undefined") return fallback;
   const saved = localStorage.getItem(ACTIVE_TAB_STORAGE_KEY);
   if (saved && tabs.some((t) => t.id === saved)) return saved;
-  return tabs[0].id;
+  return fallback;
 }
 
 function loadSavedTheme(): Theme {
@@ -177,7 +179,9 @@ const playgroundSlice = createSlice({
       if (idx === -1) return;
       state.tabs.splice(idx, 1);
       if (state.activeTabId === action.payload) {
-        state.activeTabId = state.tabs[Math.min(idx, state.tabs.length - 1)].id;
+        // Guarded by the `length <= 1` early return above: at least one tab remains.
+        const next = state.tabs[Math.min(idx, state.tabs.length - 1)]!;
+        state.activeTabId = next.id;
       }
       syncCode(state);
       saveTabs(state.tabs, state.activeTabId);
