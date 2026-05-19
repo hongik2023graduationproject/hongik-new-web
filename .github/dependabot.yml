@@ -1,0 +1,31 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "javascript"
+    # major는 사람이 검토하도록 분리, minor/patch는 그룹 PR로 묶어 노이즈 감소.
+    groups:
+      js-minor-and-patch:
+        update-types:
+          - "minor"
+          - "patch"
+    ignore:
+      # Next.js major는 라이브러리/플러그인 호환성 영향이 커 별도 검토.
+      - dependency-name: "next"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "ci"
