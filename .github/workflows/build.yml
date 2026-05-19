@@ -32,7 +32,9 @@ jobs:
           cache: 'pnpm'
 
       - name: 의존성 설치
-        run: pnpm install --no-frozen-lockfile
+        # --frozen-lockfile (기본값) — pnpm-lock.yaml과 package.json 불일치 시 CI 실패.
+        # 누구나 로컬에서 의존 추가하면 lockfile도 같이 커밋해야 한다.
+        run: pnpm install --frozen-lockfile
 
       - name: 린트
         run: pnpm lint
@@ -99,7 +101,9 @@ jobs:
           cache: 'pnpm'
 
       - name: 의존성 설치
-        run: pnpm install --no-frozen-lockfile
+        # --frozen-lockfile (기본값) — pnpm-lock.yaml과 package.json 불일치 시 CI 실패.
+        # 누구나 로컬에서 의존 추가하면 lockfile도 같이 커밋해야 한다.
+        run: pnpm install --frozen-lockfile
 
       - name: Next.js 빌드
         run: pnpm build
