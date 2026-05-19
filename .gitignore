@@ -17,6 +17,13 @@ playwright-report/
 test-results/
 .playwright-cache/
 
+# WASM 산출물 — hong-ik release에서 CI가 받아오므로 커밋하지 않는다.
+# 로컬에서 pnpm dev를 돌리려면 `./scripts/sync-wasm.sh`를 한 번 실행해 apps/playground/public/에 산출물 배치.
+# hongik-worker.js는 packages/wasm/src에서 빌드된 산출물이라 별도 (현재는 공개 디렉터리에 커밋 유지).
+apps/playground/public/hongik-wasm.js
+apps/playground/public/hongik-wasm.wasm
+apps/playground/public/manifest.json
+
 # IDE
 .vscode/
 .idea/

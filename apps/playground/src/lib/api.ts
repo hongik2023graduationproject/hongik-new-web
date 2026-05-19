@@ -2,13 +2,8 @@ import { z } from "zod";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
-const ExecuteResponseSchema = z.object({
-  status: z.string(),
-  output: z.string().optional(),
-  error: z.string().optional(),
-  execution_time_ms: z.number(),
-});
-type ExecuteResponse = z.infer<typeof ExecuteResponseSchema>;
+// 코드 실행(/api/execute)은 백엔드에서 제거됨 — 사용자 코드는 브라우저에서 WASM으로 실행한다.
+// 백엔드는 스니펫/공유/auth 등 데이터 도메인에만 책임을 진다.
 
 const ErrorResponseSchema = z.object({
   error: z.string().optional(),
@@ -21,11 +16,6 @@ const ShareResponseSchema = z.object({
 const SharedCodeSchema = z.object({
   code: z.string(),
 });
-
-interface ExecuteRequest {
-  code: string;
-  timeout?: number;
-}
 
 class ApiError extends Error {
   public readonly status?: number;
@@ -65,39 +55,6 @@ async function readErrorMessage(res: Response, fallback: string): Promise<string
     // Body wasn't JSON — fall through to fallback.
   }
   return fallback;
-}
-
-/**
- * Execute hong-ik code via the backend API.
- * Used as fallback when WASM runtime is not available.
- */
-export async function executeViaAPI(
-  code: string,
-  timeout?: number,
-  signal?: AbortSignal,
-): Promise<{ stdout: string; stderr: string; executionTime: number }> {
-  const body: ExecuteRequest = { code };
-  if (timeout) body.timeout = timeout;
-
-  const res = await fetch(`${API_BASE}/api/execute`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-    signal,
-  });
-
-  if (!res.ok) {
-    const message = await readErrorMessage(res, `HTTP ${res.status}`);
-    throw new ApiError(message, res.status);
-  }
-
-  const data: ExecuteResponse = await parseJson(res, ExecuteResponseSchema);
-
-  return {
-    stdout: data.output ?? "",
-    stderr: data.error ?? "",
-    executionTime: data.execution_time_ms,
-  };
 }
 
 /**

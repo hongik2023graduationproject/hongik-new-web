@@ -105,6 +105,14 @@ jobs:
         # 누구나 로컬에서 의존 추가하면 lockfile도 같이 커밋해야 한다.
         run: pnpm install --frozen-lockfile
 
+      # 플레이그라운드가 브라우저에서 hongik-wasm을 실행하므로,
+      # apps/playground/public/에 hong-ik release(`wasm-latest`)의 최신 산출물을 받아온다.
+      # 첫 빌드 전 hong-ik의 WASM Publish 워크플로가 1회 이상 실행되어야 한다.
+      - name: WASM 산출물 동기화
+        run: |
+          chmod +x scripts/sync-wasm.sh
+          ./scripts/sync-wasm.sh
+
       - name: Next.js 빌드
         run: pnpm build
         env:

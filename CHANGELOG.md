@@ -4,6 +4,13 @@
 
 ## [Unreleased] - 2026-05-19
 
+### 변경 (Changed) — WASM-only 마이그
+- `Header.tsx`의 백엔드 API fallback 제거 — WASM-only 실행. WASM 미지원 브라우저(매우 드문 구형)에서는 사용 불가하지만, 사용자 코드가 서버에 도달하지 않으므로 서버 측 샌드박싱 격차 자체가 해소됨.
+- `lib/api.ts`에서 `executeViaAPI`, `ExecuteRequest`, `ExecuteResponseSchema` 제거. `shareCode`와 `fetchSharedCode`는 그대로 유지.
+- `apps/playground/public/hongik-wasm.{js,wasm}` untrack + `.gitignore` 추가. `build.yml`의 `pnpm install` 직후 `./scripts/sync-wasm.sh`가 hong-ik release에서 fetch.
+- 전제 조건: hong-ik의 `WASM Publish` 워크플로가 1회 이상 실행되어 `wasm-latest` release가 존재해야 한다.
+- 로컬 개발: `./scripts/sync-wasm.sh` 1회 실행 후 `pnpm dev`.
+
 ### 추가 (Added)
 - **Next.js 에러 페이지**: `apps/playground/src/app/{not-found,error,global-error}.tsx`. 이전에는 기본 빨간 에러 화면이 노출됐다.
 - **SEO 풀 셋업**: `layout.tsx`에 OpenGraph + Twitter 카드 + 키워드/canonical/icons/viewport/metadataBase, Next.js 14 native `app/robots.ts` + `app/sitemap.ts`. `/share/*`는 임의 사용자 코드 노출 가능성으로 인덱싱 차단.

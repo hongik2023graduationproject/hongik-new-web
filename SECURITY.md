@@ -29,7 +29,7 @@
 
 ## 보안 모델 요약
 
-- **사용자 코드 실행**: WASM 인터프리터를 Web Worker에서 실행 — 메인 스레드와 격리. WASM 자체가 또 다른 샌드박스 레이어.
+- **사용자 코드 실행**: WASM 인터프리터를 Web Worker에서 실행 — 메인 스레드와 격리. WASM 자체가 또 다른 샌드박스 레이어. 백엔드 `/api/execute` fallback은 제거됨 (사용자 코드는 사용자 브라우저 밖으로 나가지 않음).
 - **인증**: JWT는 `Authorization: Bearer` 헤더, `localStorage` 저장 (XSS 시 노출 위험 있음 — 추후 httpOnly 쿠키 전환 고려 항목).
 - **CSP**: 정적 자산은 같은 origin에서만 서빙. `connect-src`로 백엔드 API URL만 허용.
 - **dependency 스캔**: Dependabot이 weekly로 npm/Actions 업데이트 PR 자동 생성.

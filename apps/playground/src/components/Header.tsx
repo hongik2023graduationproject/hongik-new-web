@@ -12,7 +12,7 @@ import {
   toggleTheme,
 } from "@/store/playgroundSlice";
 import { examples, categories } from "@/data/examples";
-import { executeViaAPI, shareCode } from "@/lib/api";
+import { shareCode } from "@/lib/api";
 import {
   loadInterpreter,
   isWasmRuntimeAvailable,
@@ -86,7 +86,8 @@ export function Header() {
   );
 
   const interpreterRef = useRef<HongIkInterpreter | null>(null);
-  const wasmFailCountRef = useRef(0);
+  // API fallback이 제거되면서 AbortController도 사실상 WASM 실행 중단용으로만 사용된다.
+  // WASM 자체는 abort 시그널을 직접 받지 않으므로 dispose()로 종료.
   const abortControllerRef = useRef<AbortController | null>(null);
   const isRunningRef = useRef(isRunning);
   isRunningRef.current = isRunning;
@@ -144,46 +145,33 @@ export function Header() {
     abortControllerRef.current = controller;
 
     try {
-      // Try WASM first (allow retry up to 3 failures)
-      const wasmAvailable = wasmFailCountRef.current < 3 && isWasmRuntimeAvailable();
-      if (wasmAvailable) {
-        try {
-          if (!interpreterRef.current) {
-            interpreterRef.current = await loadInterpreter();
-          }
-          const result = await interpreterRef.current.execute(code);
-          if (controller.signal.aborted) return;
-          wasmFailCountRef.current = 0; // 성공 시 실패 카운트 리셋
-          if (result.stdout) dispatch(appendOutput(result.stdout));
-          if (result.stderr) {
-            dispatch(appendOutput(`[에러] ${result.stderr}`));
-            dispatch(setErrorLine(parseErrorLine(result.stderr)));
-          }
-          dispatch(setExecutionTime(result.executionTime));
-          dispatch(setExecutionMode("wasm"));
-          return;
-        } catch {
-          if (controller.signal.aborted) return;
-          wasmFailCountRef.current++;
-          interpreterRef.current = null;
-          // Fall through to API
-        }
+      // WASM-only 실행. 백엔드 API fallback은 제거됨 — 사용자 코드는 사용자 브라우저에서만 실행되어
+      // 서버에 도달하지 않는다. WASM 미지원 환경(매우 드문 구형 브라우저)에서는 사용 불가.
+      if (!isWasmRuntimeAvailable()) {
+        dispatch(appendOutput("[지원되지 않는 환경] WebAssembly를 지원하지 않는 브라우저입니다."));
+        dispatch(appendOutput("[도움말] 최신 Chrome, Firefox, Safari, Edge 브라우저로 다시 시도해주세요."));
+        return;
       }
 
-      // Fallback to backend API
-      const result = await executeViaAPI(code, undefined, controller.signal);
+      if (!interpreterRef.current) {
+        interpreterRef.current = await loadInterpreter();
+      }
+      const result = await interpreterRef.current.execute(code);
+      if (controller.signal.aborted) return;
       if (result.stdout) dispatch(appendOutput(result.stdout));
       if (result.stderr) {
         dispatch(appendOutput(`[에러] ${result.stderr}`));
         dispatch(setErrorLine(parseErrorLine(result.stderr)));
       }
       dispatch(setExecutionTime(result.executionTime));
-      dispatch(setExecutionMode("api"));
+      dispatch(setExecutionMode("wasm"));
     } catch (error) {
       if (controller.signal.aborted) return;
       const message = error instanceof Error ? error.message : String(error);
       dispatch(appendOutput(`[시스템 에러] ${message}`));
-      dispatch(appendOutput("[도움말] 백엔드 서버가 실행 중인지 확인하세요."));
+      dispatch(appendOutput("[도움말] 페이지를 새로고침 후 다시 시도해주세요."));
+      // WASM 인스턴스가 손상됐을 수 있으므로 다음 실행 전 재로드.
+      interpreterRef.current = null;
     } finally {
       abortControllerRef.current = null;
       dispatch(setIsRunning(false));
