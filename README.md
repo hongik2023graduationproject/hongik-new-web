@@ -1,6 +1,13 @@
 # Hong-ik Web Playground
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
+[![Next.js](https://img.shields.io/badge/Next.js-14-000000.svg?logo=nextdotjs)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6.svg?logo=typescript)](https://www.typescriptlang.org/)
+[![Turborepo](https://img.shields.io/badge/Turborepo-2-EF4444.svg?logo=turborepo)](https://turbo.build/)
+
 한글 프로그래밍 언어 `hong-ik`을 위한 웹 기반 플레이그라운드입니다.
+
+📖 **문서**: [기여 가이드](./CONTRIBUTING.md) · [보안 정책](./SECURITY.md) · [변경 이력](./CHANGELOG.md) · [환경 변수](./.env.example) · [라이선스](./LICENSE)
 
 ## 🏗️ 프로젝트 구조
 

@@ -70,8 +70,9 @@ export const metadata: Metadata = {
         },
     },
     icons: {
-        icon: "/favicon.ico",
-        apple: "/apple-touch-icon.png",
+        // SVG favicon은 모든 모던 브라우저가 지원하고 다크모드 자동 대응 가능.
+        // .ico/apple-touch-icon은 별도 PNG 생성 후 추가 예정 (현재는 SVG 단일).
+        icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
     },
     alternates: {
         canonical: siteUrl,
