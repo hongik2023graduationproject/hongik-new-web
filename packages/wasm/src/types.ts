@@ -2,15 +2,20 @@
  * Worker ↔ 호스트 간 postMessage 프로토콜 타입
  */
 
-export type WorkerRequest =
-    | { id: number; type: 'init'; wasmUrl?: string }
-    | { id: number; type: 'execute'; code: string; timeoutMs?: number }
-    | { id: number; type: 'getTokens'; code: string }
-    | { id: number; type: 'reset' }
-    | { id: number; type: 'writeFile'; path: string; content: string }
-    | { id: number; type: 'readFile'; path: string }
-    | { id: number; type: 'fileExists'; path: string }
-    | { id: number; type: 'deleteFile'; path: string };
+// id를 제외한 요청 페이로드. 호출 측은 이걸 만들고 send()가 id를 부여한다.
+// 유니온을 분리해 두면 Omit<WorkerRequest,'id'>가 공통 멤버만 남기는 문제를 피하면서
+// 각 variant 별 필드(예: 'init' → wasmUrl, 'execute' → code/timeoutMs)가 그대로 유지된다.
+export type WorkerRequestPayload =
+    | { type: 'init'; wasmUrl?: string }
+    | { type: 'execute'; code: string; timeoutMs?: number }
+    | { type: 'getTokens'; code: string }
+    | { type: 'reset' }
+    | { type: 'writeFile'; path: string; content: string }
+    | { type: 'readFile'; path: string }
+    | { type: 'fileExists'; path: string }
+    | { type: 'deleteFile'; path: string };
+
+export type WorkerRequest = WorkerRequestPayload & { id: number };
 
 export type WorkerResponse =
     | { id: number; type: 'init'; success: true }

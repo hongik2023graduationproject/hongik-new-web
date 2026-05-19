@@ -46,11 +46,18 @@ async function loadWasm(wasmUrl?: string): Promise<HongIkEmscriptenModule> {
     return await HongIkModule();
 }
 
-function requireInterpreter(id: number): HongIkInterpreterInstance | WorkerResponse {
+type RequireInterpreterResult =
+    | { ok: true; interp: HongIkInterpreterInstance }
+    | { ok: false; response: WorkerResponse };
+
+function requireInterpreter(id: number): RequireInterpreterResult {
     if (!interpreter) {
-        return { id, type: 'error', message: '인터프리터가 초기화되지 않았습니다. init을 먼저 호출하세요.' };
+        return {
+            ok: false,
+            response: { id, type: 'error', message: '인터프리터가 초기화되지 않았습니다. init을 먼저 호출하세요.' },
+        };
     }
-    return interpreter;
+    return { ok: true, interp: interpreter };
 }
 
 async function handleMessage(msg: WorkerRequest): Promise<WorkerResponse> {
@@ -65,50 +72,50 @@ async function handleMessage(msg: WorkerRequest): Promise<WorkerResponse> {
             }
 
             case 'execute': {
-                const interp = requireInterpreter(id);
-                if (!('execute' in interp)) return interp as WorkerResponse;
+                const r = requireInterpreter(id);
+                if (!r.ok) return r.response;
                 const result = msg.timeoutMs !== undefined
-                    ? interp.executeWithTimeout(msg.code, msg.timeoutMs)
-                    : interp.execute(msg.code);
+                    ? r.interp.executeWithTimeout(msg.code, msg.timeoutMs)
+                    : r.interp.execute(msg.code);
                 return { id, type: 'execute', result };
             }
 
             case 'getTokens': {
-                const interp = requireInterpreter(id);
-                if (!('execute' in interp)) return interp as WorkerResponse;
-                return { id, type: 'getTokens', result: interp.getTokens(msg.code) };
+                const r = requireInterpreter(id);
+                if (!r.ok) return r.response;
+                return { id, type: 'getTokens', result: r.interp.getTokens(msg.code) };
             }
 
             case 'reset': {
-                const interp = requireInterpreter(id);
-                if (!('execute' in interp)) return interp as WorkerResponse;
-                interp.reset();
+                const r = requireInterpreter(id);
+                if (!r.ok) return r.response;
+                r.interp.reset();
                 return { id, type: 'reset', success: true };
             }
 
             case 'writeFile': {
-                const interp = requireInterpreter(id);
-                if (!('execute' in interp)) return interp as WorkerResponse;
-                interp.writeFile(msg.path, msg.content);
+                const r = requireInterpreter(id);
+                if (!r.ok) return r.response;
+                r.interp.writeFile(msg.path, msg.content);
                 return { id, type: 'writeFile', success: true };
             }
 
             case 'readFile': {
-                const interp = requireInterpreter(id);
-                if (!('execute' in interp)) return interp as WorkerResponse;
-                return { id, type: 'readFile', result: interp.readFile(msg.path) };
+                const r = requireInterpreter(id);
+                if (!r.ok) return r.response;
+                return { id, type: 'readFile', result: r.interp.readFile(msg.path) };
             }
 
             case 'fileExists': {
-                const interp = requireInterpreter(id);
-                if (!('execute' in interp)) return interp as WorkerResponse;
-                return { id, type: 'fileExists', result: interp.fileExists(msg.path) };
+                const r = requireInterpreter(id);
+                if (!r.ok) return r.response;
+                return { id, type: 'fileExists', result: r.interp.fileExists(msg.path) };
             }
 
             case 'deleteFile': {
-                const interp = requireInterpreter(id);
-                if (!('execute' in interp)) return interp as WorkerResponse;
-                interp.deleteFile(msg.path);
+                const r = requireInterpreter(id);
+                if (!r.ok) return r.response;
+                r.interp.deleteFile(msg.path);
                 return { id, type: 'deleteFile', success: true };
             }
 

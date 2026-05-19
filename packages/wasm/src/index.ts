@@ -6,7 +6,7 @@
  */
 
 import type { WasmExecutionResult } from '@hongik/core';
-import type { WorkerRequest, WorkerResponse } from './types';
+import type { WorkerRequest, WorkerRequestPayload, WorkerResponse } from './types';
 
 // ---- 타입 ----
 
@@ -192,7 +192,7 @@ export async function loadInterpreter(
         rejectAll(`Worker 오류: ${e.message}`);
     };
 
-    function send<T extends WorkerResponse>(req: Omit<WorkerRequest, 'id'>): Promise<T> {
+    function send<T extends WorkerResponse>(req: WorkerRequestPayload): Promise<T> {
         if (isDisposed) {
             return Promise.reject(new Error('인터프리터가 종료되었습니다.'));
         }
@@ -202,12 +202,13 @@ export async function loadInterpreter(
         const id = ++requestId;
         const { promise, resolve, reject } = createPendingRequest<T>();
         pending.set(id, { resolve: resolve as (v: unknown) => void, reject });
-        worker.postMessage({ ...req, id } as WorkerRequest);
+        const fullRequest: WorkerRequest = { ...req, id };
+        worker.postMessage(fullRequest);
         return promise;
     }
 
     // Worker 초기화
-    await send<WorkerResponse & { type: 'init' }>({ type: 'init', wasmUrl } as Omit<WorkerRequest, 'id'>);
+    await send<WorkerResponse & { type: 'init' }>({ type: 'init', wasmUrl });
 
     return {
         async execute(code: string, options?: ExecuteOptions): Promise<WasmExecutionResult> {
@@ -217,7 +218,7 @@ export async function loadInterpreter(
                 type: 'execute',
                 code,
                 timeoutMs: options?.timeoutMs,
-            } as Omit<WorkerRequest, 'id'>);
+            });
 
             const executionTime = performance.now() - startTime;
             const parsed = parseExecuteResult(resp.result);
@@ -234,25 +235,25 @@ export async function loadInterpreter(
             const resp = await send<WorkerResponse & { type: 'getTokens'; result: string }>({
                 type: 'getTokens',
                 code,
-            } as Omit<WorkerRequest, 'id'>);
+            });
 
             const parsed = parseTokensResult(resp.result);
             return parsed.tokens ?? [];
         },
 
         async reset(): Promise<void> {
-            await send({ type: 'reset' } as Omit<WorkerRequest, 'id'>);
+            await send({ type: 'reset' });
         },
 
         async writeFile(path: string, content: string): Promise<void> {
-            await send({ type: 'writeFile', path, content } as Omit<WorkerRequest, 'id'>);
+            await send({ type: 'writeFile', path, content });
         },
 
         async readFile(path: string): Promise<string> {
             const resp = await send<WorkerResponse & { type: 'readFile'; result: string }>({
                 type: 'readFile',
                 path,
-            } as Omit<WorkerRequest, 'id'>);
+            });
             return resp.result;
         },
 
@@ -260,12 +261,12 @@ export async function loadInterpreter(
             const resp = await send<WorkerResponse & { type: 'fileExists'; result: boolean }>({
                 type: 'fileExists',
                 path,
-            } as Omit<WorkerRequest, 'id'>);
+            });
             return resp.result;
         },
 
         async deleteFile(path: string): Promise<void> {
-            await send({ type: 'deleteFile', path } as Omit<WorkerRequest, 'id'>);
+            await send({ type: 'deleteFile', path });
         },
 
         dispose(): void {
