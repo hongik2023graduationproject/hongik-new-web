@@ -118,8 +118,6 @@ export function isWasmRuntimeAvailable(): boolean {
 
 // ---- Worker 통신 ----
 
-let requestId = 0;
-
 function createPendingRequest<T>(): {
     promise: Promise<T>;
     resolve: (value: T) => void;
@@ -163,6 +161,9 @@ export async function loadInterpreter(
 
     const worker = new Worker(workerUrl);
     const pending = new Map<number, { resolve: (v: unknown) => void; reject: (r: unknown) => void }>();
+    // 인스턴스별 카운터: 동일 페이지에서 loadInterpreter()를 여러 번 호출하거나 HMR로 재초기화되어도
+    // 다른 인스턴스의 pending과 ID가 충돌하지 않는다.
+    let requestId = 0;
     let isDisposed = false;
     let isCrashed = false;
 
