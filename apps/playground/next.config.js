@@ -1,14 +1,11 @@
-const path = require('path');
 const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'standalone',
+  // 코드는 브라우저 WASM에서만 실행되고 서버 기능을 쓰지 않아 정적 파일로 내보낸다.
+  // COEP/COOP 헤더는 정적 내보내기에서 headers()를 쓸 수 없어 nginx.conf에서 붙인다.
+  output: 'export',
   reactStrictMode: true,
-  experimental: {
-    // Required for pnpm monorepo: trace files outside the app directory
-    outputFileTracingRoot: path.join(__dirname, '../../'),
-  },
   webpack(config, { isServer }) {
     // WASM file support
     config.experiments = {
@@ -42,24 +39,6 @@ const nextConfig = {
     }
 
     return config;
-  },
-  // COEP/COOP headers for SharedArrayBuffer (WASM)
-  async headers() {
-    return [
-      {
-        source: "/(.*)",
-        headers: [
-          {
-            key: "Cross-Origin-Embedder-Policy",
-            value: "credentialless",
-          },
-          {
-            key: "Cross-Origin-Opener-Policy",
-            value: "same-origin",
-          },
-        ],
-      },
-    ];
   },
 };
 
