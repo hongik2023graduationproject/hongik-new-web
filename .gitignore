@@ -19,7 +19,9 @@ test-results/
 
 # WASM 산출물 — hong-ik release에서 CI가 받아오므로 커밋하지 않는다.
 # 로컬에서 pnpm dev를 돌리려면 `./scripts/sync-wasm.sh`를 한 번 실행해 apps/playground/public/에 산출물 배치.
-# hongik-worker.js는 packages/wasm/src에서 빌드된 산출물이라 별도 (현재는 공개 디렉터리에 커밋 유지).
+# hongik-worker.js는 packages/wasm/src/hongik-worker.ts의 빌드 산출물이다. playground의 build·dev가
+# apps/playground/scripts/copy-worker.mjs로 packages/wasm/dist에서 복사한다(손으로 고친 사본을 두지 않는다).
+apps/playground/public/hongik-worker.js
 apps/playground/public/hongik-wasm.js
 apps/playground/public/hongik-wasm.wasm
 apps/playground/public/manifest.json

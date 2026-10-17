@@ -1,25 +1,32 @@
+"use strict";
 /**
  * Hong-ik WASM Web Worker
+ *
  * WASM 인터프리터를 Web Worker 내에서 실행하여 메인 스레드 블로킹을 방지합니다.
+ * postMessage 프로토콜로 호스트와 통신합니다.
  */
-
+// Worker 내부 상태
 let interpreter = null;
-
 async function loadWasm(wasmUrl) {
     const url = wasmUrl || './hongik-wasm.js';
     importScripts(url);
-
     const HongIkModule = self['HongIkModule'];
     if (!HongIkModule) {
-        throw new Error('HongIkModule을 로드할 수 없습니다.');
+        throw new Error('HongIkModule을 로드할 수 없습니다. WASM 파일 경로를 확인하세요.');
     }
-
     return await HongIkModule();
 }
-
+function requireInterpreter(id) {
+    if (!interpreter) {
+        return {
+            ok: false,
+            response: { id, type: 'error', message: '인터프리터가 초기화되지 않았습니다. init을 먼저 호출하세요.' },
+        };
+    }
+    return { ok: true, interp: interpreter };
+}
 async function handleMessage(msg) {
     const { id } = msg;
-
     try {
         switch (msg.type) {
             case 'init': {
@@ -27,81 +34,64 @@ async function handleMessage(msg) {
                 interpreter = new module.HongIkInterpreter();
                 return { id, type: 'init', success: true };
             }
-
             case 'execute': {
-                if (!interpreter) {
-                    return { id, type: 'error', message: '인터프리터가 초기화되지 않았습니다.' };
-                }
-                let result;
-                if (msg.timeoutMs !== undefined || msg.maxMemoryBytes !== undefined) {
-                    result = interpreter.executeWithLimits(
-                        msg.code,
-                        msg.timeoutMs ?? 5000,
-                        msg.maxMemoryBytes ?? 33554432,
-                    );
-                } else {
-                    result = interpreter.execute(msg.code);
-                }
+                const r = requireInterpreter(id);
+                if (!r.ok)
+                    return r.response;
+                const result = msg.timeoutMs !== undefined
+                    ? r.interp.executeWithTimeout(msg.code, msg.timeoutMs)
+                    : r.interp.execute(msg.code);
                 return { id, type: 'execute', result };
             }
-
             case 'getTokens': {
-                if (!interpreter) {
-                    return { id, type: 'error', message: '인터프리터가 초기화되지 않았습니다.' };
-                }
-                const result = interpreter.getTokens(msg.code);
-                return { id, type: 'getTokens', result };
+                const r = requireInterpreter(id);
+                if (!r.ok)
+                    return r.response;
+                return { id, type: 'getTokens', result: r.interp.getTokens(msg.code) };
             }
-
             case 'reset': {
-                if (!interpreter) {
-                    return { id, type: 'error', message: '인터프리터가 초기화되지 않았습니다.' };
-                }
-                interpreter.reset();
+                const r = requireInterpreter(id);
+                if (!r.ok)
+                    return r.response;
+                r.interp.reset();
                 return { id, type: 'reset', success: true };
             }
-
             case 'writeFile': {
-                if (!interpreter) {
-                    return { id, type: 'error', message: '인터프리터가 초기화되지 않았습니다.' };
-                }
-                interpreter.writeFile(msg.path, msg.content);
+                const r = requireInterpreter(id);
+                if (!r.ok)
+                    return r.response;
+                r.interp.writeFile(msg.path, msg.content);
                 return { id, type: 'writeFile', success: true };
             }
-
             case 'readFile': {
-                if (!interpreter) {
-                    return { id, type: 'error', message: '인터프리터가 초기화되지 않았습니다.' };
-                }
-                const result = interpreter.readFile(msg.path);
-                return { id, type: 'readFile', result };
+                const r = requireInterpreter(id);
+                if (!r.ok)
+                    return r.response;
+                return { id, type: 'readFile', result: r.interp.readFile(msg.path) };
             }
-
             case 'fileExists': {
-                if (!interpreter) {
-                    return { id, type: 'error', message: '인터프리터가 초기화되지 않았습니다.' };
-                }
-                const result = interpreter.fileExists(msg.path);
-                return { id, type: 'fileExists', result };
+                const r = requireInterpreter(id);
+                if (!r.ok)
+                    return r.response;
+                return { id, type: 'fileExists', result: r.interp.fileExists(msg.path) };
             }
-
             case 'deleteFile': {
-                if (!interpreter) {
-                    return { id, type: 'error', message: '인터프리터가 초기화되지 않았습니다.' };
-                }
-                interpreter.deleteFile(msg.path);
+                const r = requireInterpreter(id);
+                if (!r.ok)
+                    return r.response;
+                r.interp.deleteFile(msg.path);
                 return { id, type: 'deleteFile', success: true };
             }
-
             default:
-                return { id, type: 'error', message: '알 수 없는 메시지 타입: ' + msg.type };
+                return { id, type: 'error', message: `알 수 없는 메시지 타입: ${msg.type}` };
         }
-    } catch (err) {
+    }
+    catch (err) {
         return { id, type: 'error', message: err instanceof Error ? err.message : String(err) };
     }
 }
-
-self.onmessage = async function(e) {
+self.onmessage = async (e) => {
     const response = await handleMessage(e.data);
     self.postMessage(response);
 };
+//# sourceMappingURL=hongik-worker.js.map

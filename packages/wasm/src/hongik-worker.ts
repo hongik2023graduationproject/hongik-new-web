@@ -5,11 +5,14 @@
  * postMessage 프로토콜로 호스트와 통신합니다.
  */
 
-import type { WorkerRequest, WorkerResponse } from './types';
-
-// Worker 글로벌 스코프 타입 선언
-declare function importScripts(...urls: string[]): void;
-declare const self: DedicatedWorkerGlobalScope;
+// 이 파일은 classic 워커 스크립트로 빌드돼야 한다(index.ts 가 `new Worker(url)` 로 띄우고,
+// importScripts 는 module 워커에서 쓸 수 없다). 최상위 import/export 가 있으면 tsc 가 모듈로 보고
+// `export {}` 를 붙여 워커가 문법 오류로 죽는다. 그래서 타입은 import() 타입 쿼리로만 가져온다.
+// importScripts·self 는 tsconfig.worker.json 의 WebWorker lib 가 선언한다.
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports -- `import type` 은 이 파일을 모듈로 만든다(위 설명)
+type WorkerRequest = import('./types').WorkerRequest;
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports -- 위와 같다
+type WorkerResponse = import('./types').WorkerResponse;
 
 // Emscripten MODULARIZE 출력 타입
 interface HongIkEmscriptenModule {
