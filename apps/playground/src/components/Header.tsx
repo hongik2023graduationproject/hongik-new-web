@@ -327,6 +327,7 @@ export function Header() {
           className="h-9 w-9 sm:hidden"
           onClick={handleFormat}
           title="코드 정리 (Ctrl+Shift+F)"
+          aria-label="코드 정리"
         >
           <Code2 className="h-4 w-4" />
         </Button>
@@ -348,6 +349,7 @@ export function Header() {
             className="h-9 w-9 sm:hidden"
             onClick={handleShare}
             title="공유 링크 복사"
+            aria-label="공유 링크 복사"
           >
             <Share2 className="h-4 w-4" />
           </Button>
@@ -375,6 +377,7 @@ export function Header() {
               size="icon"
               className="h-9 w-9"
               title="단축키 도움말"
+              aria-label="단축키 도움말"
               data-onboarding="help-button"
             >
               <HelpCircle className="h-4 w-4" />
@@ -429,6 +432,7 @@ export function Header() {
           className="h-9 w-9"
           onClick={() => dispatch(toggleTheme())}
           title={theme === "dark" ? "라이트 모드" : "다크 모드"}
+          aria-label={theme === "dark" ? "라이트 모드" : "다크 모드"}
         >
           {theme === "dark" ? (
             <Sun className="h-4 w-4" />

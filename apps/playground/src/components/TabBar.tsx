@@ -95,6 +95,7 @@ export function TabBar() {
         onClick={() => dispatch(addTab())}
         className="flex items-center justify-center shrink-0 px-2 py-1.5 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
         title="새 탭 추가"
+        aria-label="새 탭 추가"
       >
         <Plus className="h-4 w-4" />
       </button>

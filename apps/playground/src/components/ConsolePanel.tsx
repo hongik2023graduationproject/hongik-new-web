@@ -177,6 +177,7 @@ export function ConsolePanel() {
             className="h-7 w-7"
             onClick={() => dispatch(clearOutput())}
             title="콘솔 지우기"
+            aria-label="콘솔 지우기"
           >
             <Trash2 className="h-3.5 w-3.5" />
           </Button>
