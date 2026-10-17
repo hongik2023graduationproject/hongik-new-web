@@ -21,6 +21,11 @@ const nextConfig = {
     if (!isServer) {
       config.plugins.push(
         new MonacoWebpackPlugin({
+          // Static export only copies .next/static, so the worker must be emitted there
+          // (the default '[name].worker.js' lands in .next/ and 404s). The name has no
+          // content hash: the plugin hashes the tiny entry file, not the bundle, so nginx
+          // serves /_next/static/monaco/ with no-cache instead of the immutable rule.
+          filename: 'static/monaco/[name].worker.js',
           // Only include the editor worker (no extra language workers needed)
           languages: [],
           features: [
