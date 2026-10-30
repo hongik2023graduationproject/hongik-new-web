@@ -11,8 +11,8 @@ export default function robots(): MetadataRoute.Robots {
             {
                 userAgent: "*",
                 allow: "/",
-                // 공유 링크 페이지는 인덱싱 안 함 — 임의 사용자 코드 노출 방지.
-                disallow: ["/api/", "/share/"],
+                // 공유 링크는 URL 프래그먼트(#code=)에 코드를 담아 크롤러에 노출되지 않으므로
+                // 별도 disallow가 필요 없다 (서버 /api/, /share/ 경로는 더 이상 없음).
             },
         ],
         sitemap: `${siteUrl}/sitemap.xml`,

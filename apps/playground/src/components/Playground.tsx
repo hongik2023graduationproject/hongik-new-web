@@ -2,18 +2,18 @@
 
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import {
+  appendOutput,
   initFromStorage,
   loadPersistedState,
   setCode,
 } from "@/store/playgroundSlice";
-import { fetchSharedCode } from "@/lib/api";
+import { readSharedCode } from "@/lib/share";
 import { Header } from "./Header";
 import { EditorPanel } from "./EditorPanel";
 import { ConsolePanel } from "./ConsolePanel";
 import { OnboardingTutorial } from "./OnboardingTutorial";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useEffect, useRef, useState, useCallback } from "react";
-import { useSearchParams } from "next/navigation";
 
 const PANEL_RATIO_KEY = "playground-panel-ratio";
 const DEFAULT_RATIO = 50;
@@ -33,7 +33,6 @@ function loadRatio(): number {
 export function Playground() {
   const dispatch = useAppDispatch();
   const theme = useAppSelector((state) => state.playground.theme);
-  const searchParams = useSearchParams();
 
   // Panel resize state
   const [leftRatio, setLeftRatio] = useState(DEFAULT_RATIO);
@@ -102,23 +101,30 @@ export function Playground() {
   useEffect(() => {
     dispatch(initFromStorage(loadPersistedState()));
 
-    // URL ?share=TOKEN: fetch shared code from API
-    const shareToken = searchParams.get("share");
-    if (shareToken) {
-      fetchSharedCode(shareToken)
-        .then((sharedCode) => dispatch(setCode(sharedCode)))
-        .catch(() => {
-          // ignore – fall through to default code
-        });
-      return;
-    }
+    // 공유 링크(#code= 또는 구형 ?code=)의 코드가 localStorage보다 우선한다.
+    const loadFromLocation = () => {
+      const shared = readSharedCode(window.location.search, window.location.hash);
+      switch (shared.kind) {
+        case "code":
+          dispatch(setCode(shared.code));
+          break;
+        case "invalid":
+          dispatch(appendOutput("[알림] 공유 링크가 손상되어 코드를 불러오지 못했습니다. 링크 전체가 복사됐는지 확인해주세요."));
+          break;
+        case "legacy-share":
+          dispatch(appendOutput("[알림] 서버 공유 링크(?share=)는 더 이상 지원되지 않습니다. 코드를 받은 곳에 새 공유 링크를 요청해주세요."));
+          break;
+      }
+    };
+    loadFromLocation();
 
-    // URL ?code= parameter takes priority over localStorage
-    const codeParam = searchParams.get("code");
-    if (codeParam) {
-      dispatch(setCode(codeParam));
-    }
-  }, [dispatch, searchParams]);
+    // 이미 열린 탭에 #code= 링크를 붙여 넣으면 새로고침 없이 hashchange만 일어난다.
+    const onHashChange = () => {
+      if (readSharedCode("", window.location.hash).kind !== "none") loadFromLocation();
+    };
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
+  }, [dispatch]);
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", theme === "dark");

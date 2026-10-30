@@ -12,7 +12,7 @@ import {
   toggleTheme,
 } from "@/store/playgroundSlice";
 import { examples, categories } from "@/data/examples";
-import { shareCode } from "@/lib/api";
+import { MAX_SHARE_URL_LENGTH, buildShareUrl } from "@/lib/share";
 import {
   loadInterpreter,
   isWasmRuntimeAvailable,
@@ -92,7 +92,8 @@ export function Header() {
   const isRunningRef = useRef(isRunning);
   isRunningRef.current = isRunning;
 
-  const [shareToast, setShareToast] = useState(false);
+  const [shareToast, setShareToast] = useState<string | null>(null);
+  const shareToastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [helpOpen, setHelpOpen] = useState(false);
   const [onboardingRequested, setOnboardingRequested] = useState(false);
 
@@ -178,21 +179,33 @@ export function Header() {
     }
   }, [code, dispatch]);
 
+  const showShareToast = useCallback((message: string, durationMs = 2000) => {
+    if (shareToastTimerRef.current) clearTimeout(shareToastTimerRef.current);
+    setShareToast(message);
+    shareToastTimerRef.current = setTimeout(() => setShareToast(null), durationMs);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (shareToastTimerRef.current) clearTimeout(shareToastTimerRef.current);
+    };
+  }, []);
+
+  // 서버 없이 코드를 URL 프래그먼트(#code=)에 압축해 담는다.
   const handleShare = useCallback(async () => {
+    const url = buildShareUrl(code, `${window.location.origin}${window.location.pathname}`);
     try {
-      const token = await shareCode(code);
-      const url = `${window.location.origin}${window.location.pathname}?share=${token}`;
       await navigator.clipboard.writeText(url);
-      setShareToast(true);
-      setTimeout(() => setShareToast(false), 2000);
     } catch {
-      // Fallback: copy code URL-encoded
-      const url = `${window.location.origin}${window.location.pathname}?code=${encodeURIComponent(code)}`;
-      await navigator.clipboard.writeText(url);
-      setShareToast(true);
-      setTimeout(() => setShareToast(false), 2000);
+      showShareToast("복사 실패 — 클립보드 권한을 확인해주세요.", 4000);
+      return;
     }
-  }, [code]);
+    if (url.length > MAX_SHARE_URL_LENGTH) {
+      showShareToast("복사됨! 링크가 길어 일부 환경에서 잘릴 수 있습니다.", 5000);
+    } else {
+      showShareToast("복사됨!");
+    }
+  }, [code, showShareToast]);
 
   const handleFormat = useCallback(() => {
     const formatted = formatCode(code);
@@ -364,8 +377,11 @@ export function Header() {
             공유
           </Button>
           {shareToast && (
-            <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-foreground px-2 py-1 text-xs text-background shadow z-50">
-              복사됨!
+            <span
+              role="status"
+              className="absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-foreground px-2 py-1 text-xs text-background shadow z-50"
+            >
+              {shareToast}
             </span>
           )}
         </div>
