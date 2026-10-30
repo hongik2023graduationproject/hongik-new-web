@@ -10,7 +10,7 @@
 - [ ] 인프라/CI/패키지
 
 ## 영향받는 워크스페이스
-- [ ] `apps/playground`
+- [ ] `apps/site`
 - [ ] `packages/core`
 - [ ] `packages/ui`
 - [ ] `packages/wasm`
@@ -20,7 +20,7 @@
 - [ ] `pnpm turbo run typecheck` 통과
 - [ ] `pnpm turbo run lint` 통과
 - [ ] `pnpm turbo run test` 통과
-- [ ] (해당 시) `pnpm --filter @hongik/playground e2e` 통과
+- [ ] (해당 시) `pnpm --filter @hongik/site e2e` 통과
 - [ ] 수동 브라우저 검증 (Chrome / Firefox / Safari 중 ≥ 1)
 
 ## 스크린샷 (UI 변경 시)

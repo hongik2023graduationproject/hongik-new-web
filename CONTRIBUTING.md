@@ -1,13 +1,13 @@
 # Contributing to hongik-web
 
-홍익 프로그래밍 언어 웹 플레이그라운드. pnpm + Turborepo 모노레포.
+홍익 프로그래밍 언어 웹사이트(소개·플레이그라운드·문서). pnpm + Turborepo 모노레포, 사이트는 Astro.
 
 ## 개발 환경 세팅
 
 ### 필수 도구
 
-- Node.js 20+
-- pnpm 8+ (`corepack enable` 또는 `npm i -g pnpm`)
+- Node.js 24 (최소 22.23, Astro 7 요구 사항)
+- pnpm 9.15.9 (`corepack enable` 또는 `npm i -g pnpm@9.15.9`)
 
 ### 시작하기
 
@@ -15,7 +15,8 @@
 git clone https://github.com/hongik2023graduationproject/hongik-new-web.git
 cd hongik-new-web
 pnpm install
-pnpm dev          # apps/playground는 3000 포트
+./scripts/sync-wasm.sh   # WASM 런타임 받기 (최초 1회)
+pnpm dev                 # apps/site — http://localhost:4321
 ```
 
 백엔드 서버나 `.env` 설정 없이 바로 동작합니다 (실행은 브라우저 WASM, 공유는 URL 프래그먼트).
@@ -24,7 +25,7 @@ pnpm dev          # apps/playground는 3000 포트
 
 ```
 apps/
-  playground/              # Next.js 플레이그라운드 (메인 앱)
+  site/                    # Astro 사이트: / 소개, /playground/ (React 섬), /docs/ (Starlight)
 packages/
   core/                    # 순수 TS 유틸 + 타입
   ui/                      # 공유 React 컴포넌트 (Radix 기반)
@@ -32,13 +33,13 @@ packages/
   eslint-config/           # 공유 ESLint 설정
 ```
 
-각 워크스페이스는 `package.json`을 가지며 turbo로 빌드 순서가 결정됩니다 (`apps/playground`는 모든 `packages/*`에 의존).
+각 워크스페이스는 `package.json`을 가지며 turbo로 빌드 순서가 결정됩니다 (`apps/site`는 `packages/wasm`에 의존).
 
 ## 개발 워크플로
 
 ### 브랜치 / 커밋
 - `feat/<summary>`, `fix/<summary>`, `refactor/<summary>` 등으로 분기.
-- conventional commits 권장 (`feat(playground):`, `fix(wasm):`).
+- conventional commits 권장 (`feat(site):`, `fix(playground):`, `docs(docs):`, `fix(wasm):`).
 
 ### 코드 스타일
 - TypeScript strict 유지. `any` 회피, 외부 입력은 `unknown` + Zod로 좁히기.
@@ -55,8 +56,8 @@ pnpm turbo run build          # 빌드 자체 검증
 
 ### E2E
 ```bash
-pnpm --filter @hongik/playground exec playwright install --with-deps chromium  # 최초 1회
-pnpm --filter @hongik/playground e2e
+pnpm --filter @hongik/site exec playwright install --with-deps chromium  # 최초 1회
+pnpm --filter @hongik/site e2e
 ```
 
 ### 새 패키지/의존성
@@ -65,7 +66,7 @@ pnpm --filter @hongik/playground e2e
 - 잠금 파일 무결성: CI는 `--frozen-lockfile`로 install. 로컬에서 의존 추가 후 lockfile도 같이 커밋.
 
 ### WASM 빌드 산출물
-`apps/playground/public/hongik-wasm.{js,wasm}`와 `hongik-worker.js`는 `hong-ik` 저장소에서 빌드된 산출물입니다. 업데이트 절차는 `hong-ik` 저장소 README의 "WASM 빌드" 섹션 참조.
+`apps/site/public/hongik-wasm.{js,wasm}`는 `hong-ik` 저장소 릴리스(`wasm-latest`)에서 `./scripts/sync-wasm.sh`로 받는 산출물이고, `hongik-worker.js`는 `packages/wasm` 빌드 결과를 복사한 것입니다. 둘 다 커밋하지 않습니다.
 
 ## PR 제출
 

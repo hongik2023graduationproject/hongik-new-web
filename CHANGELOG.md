@@ -4,6 +4,15 @@
 
 ## [Unreleased] - 2026-05-19
 
+### 변경 (Changed) — Astro로 사이트 통합 ⚠️
+- **플레이그라운드와 문서를 한 사이트로**: Next.js 플레이그라운드(`apps/playground`)와 별도 저장소의 VitePress 문서(hongik-docs)를 Astro 7 정적 사이트 `apps/site` 하나로 합쳤다. `/` 소개, `/playground/` 플레이그라운드(React 섬), `/docs/` 문서(Starlight, 46쪽, 한국어 검색).
+- **주소 변경**: 플레이그라운드가 `/`에서 `/playground/`로 옮겼다. 예전 `/#code=`, `/?code=`, `/?share=` 링크는 소개 페이지가 `/playground/`로 넘긴다. 예전 문서 주소(hongik-docs.tolelom.xyz) → `/docs/` 대응표는 `apps/site/docs-redirects.txt` (리다이렉트는 서버 설정에서).
+- **Monaco**: webpack 플러그인 대신 Vite `?worker`로 편집기 워커만 번들. CDN 요청 없음.
+- **Tailwind**는 플레이그라운드 페이지에만 적용된다(문서·소개 페이지에는 Tailwind CSS가 없다).
+- **배포**: 이미지 이름·태그·포트(3000)·arm64는 그대로. 내용만 `apps/site/dist`. nginx는 `/_astro/`를 장기 캐시하고, 리다이렉트를 상대 경로로 보낸다. COOP/COEP 헤더 제거(SharedArrayBuffer를 쓰지 않음).
+- **CI**: Node 24 (Astro 7은 Node 22.23 이상 필요).
+
+
 ### 변경 (Changed) — 백엔드 제거
 - **공유 링크를 서버리스로 전환**: 코드를 lz-string(`compressToEncodedURIComponent`)으로 압축해 URL 프래그먼트 `/#code=<압축>`에 담는다. 프래그먼트는 서버로 전송되지 않는다. 링크가 8000자를 넘으면 복사 후 경고 토스트를 띄운다. 구현은 `apps/playground/src/lib/share.ts`.
 - 구형 `?code=<urlencoded>` 링크는 계속 열린다. 구형 `?share=TOKEN` 서버 링크는 더 이상 불러올 수 없으며 콘솔에 안내 메시지를 띄운다.

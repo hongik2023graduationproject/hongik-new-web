@@ -13,8 +13,8 @@ import { afterAll, describe, expect, it } from 'vitest';
 const here = fileURLToPath(new URL('.', import.meta.url));
 const repo = resolve(here, '../../..');
 const builtWorker = join(repo, 'packages/wasm/dist/hongik-worker.js');
-const servedWorker = join(repo, 'apps/playground/public/hongik-worker.js');
-const copyScript = join(repo, 'apps/playground/scripts/copy-worker.mjs');
+const servedWorker = join(repo, 'apps/site/public/hongik-worker.js');
+const copyScript = join(repo, 'apps/site/scripts/copy-worker.mjs');
 
 describe('worker served by the playground', () => {
     const tmp = mkdtempSync(join(tmpdir(), 'hongik-worker-'));
@@ -42,7 +42,7 @@ describe('worker served by the playground', () => {
     it('playground build and dev run the copy script first', () => {
         // Called explicitly rather than as prebuild/predev: pre/post hooks depend on the
         // package manager and its settings.
-        const pkg = JSON.parse(readFileSync(join(repo, 'apps/playground/package.json'), 'utf8'));
+        const pkg = JSON.parse(readFileSync(join(repo, 'apps/site/package.json'), 'utf8'));
         expect(pkg.scripts.build).toMatch(/^node scripts\/copy-worker\.mjs && /);
         expect(pkg.scripts.dev).toMatch(/^node scripts\/copy-worker\.mjs && /);
     });
