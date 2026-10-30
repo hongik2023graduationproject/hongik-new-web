@@ -18,6 +18,8 @@ pnpm install
 pnpm dev          # apps/playground는 3000 포트
 ```
 
+백엔드 서버나 `.env` 설정 없이 바로 동작합니다 (실행은 브라우저 WASM, 공유는 URL 프래그먼트).
+
 ## 모노레포 구조
 
 ```

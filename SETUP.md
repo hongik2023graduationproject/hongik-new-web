@@ -135,6 +135,9 @@ pnpm build
 pnpm test
 ```
 
+> 백엔드 서버나 API 환경 변수는 필요 없습니다. 코드 실행은 브라우저 WASM, 공유 링크는
+> URL 프래그먼트(`/#code=<lz-string>`, `apps/playground/src/lib/share.ts`)로 처리합니다.
+
 ### 🚨 트러블슈팅: `Cannot find module 'next/dist/...'`
 
 `pnpm dev` 또는 `pnpm build` 실행 시 다음과 비슷한 에러가 보이면:

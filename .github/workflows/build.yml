@@ -115,8 +115,6 @@ jobs:
 
       - name: Next.js 빌드
         run: pnpm build
-        env:
-          NEXT_PUBLIC_API_URL: https://hongik.api.tolelom.xyz
 
       - name: QEMU 설정
         uses: docker/setup-qemu-action@v3

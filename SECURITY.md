@@ -30,6 +30,7 @@
 ## 보안 모델 요약
 
 - **사용자 코드 실행**: WASM 인터프리터를 Web Worker에서 실행 — 메인 스레드와 격리. WASM 자체가 또 다른 샌드박스 레이어. 백엔드 `/api/execute` fallback은 제거됨 (사용자 코드는 사용자 브라우저 밖으로 나가지 않음).
-- **인증**: JWT는 `Authorization: Bearer` 헤더, `localStorage` 저장 (XSS 시 노출 위험 있음 — 추후 httpOnly 쿠키 전환 고려 항목).
-- **CSP**: 정적 자산은 같은 origin에서만 서빙. `connect-src`로 백엔드 API URL만 허용.
+- **백엔드 없음**: 플레이그라운드는 정적 파일(nginx)로만 서빙되며 호출하는 API 서버가 없다. 로그인/인증 기능도 없다.
+- **공유 링크**: 코드를 lz-string으로 압축해 URL 프래그먼트(`/#code=...`)에 담는다. 프래그먼트는 HTTP 요청에 포함되지 않아 서버 로그에 남지 않지만, 링크를 가진 누구나 코드를 볼 수 있다. 불러온 코드는 에디터에 채워질 뿐 자동 실행되지 않는다.
+- **정적 자산**: 같은 origin에서만 서빙.
 - **dependency 스캔**: Dependabot이 weekly로 npm/Actions 업데이트 PR 자동 생성.

@@ -19,7 +19,7 @@ test.describe('playground smoke', () => {
         await page.goto('/');
 
         // WASM 사전 로딩이 끝나기를 기다린다 (Header의 useEffect).
-        // 그 전까지 클릭은 무시될 수 있다 — `executeViaAPI` 폴백이 작동하기 전까지의 짧은 시간.
+        // 그 전까지 클릭은 무시될 수 있다.
         const runButton = page.locator('[data-onboarding="run-button"]');
         await expect(runButton).toBeVisible();
 
