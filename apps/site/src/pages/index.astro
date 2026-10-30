@@ -1,9 +1,107 @@
 ---
+// 소개 페이지(/) — 옛 hongik-docs의 VitePress 홈(docs/index.md hero/features)을 옮긴 것.
+// 프레임워크 JS 없이 정적 HTML + intro.css만 쓴다.
+import '../styles/intro.css';
+
+const title = 'hong-ik — 한글 프로그래밍 언어';
+const description = '한국어로 작성하는 직관적인 프로그래밍 언어. 한글 문법, 이중 실행 엔진, OOP를 지원합니다.';
+const site = 'https://hongik.tolelom.xyz';
+
+const actions = [
+  { theme: 'brand', text: '플레이그라운드', link: '/playground/' },
+  { theme: 'alt', text: '시작하기', link: '/docs/getting-started/introduction/' },
+  { theme: 'alt', text: '문서 보기', link: '/docs/language-reference/types/' },
+];
+
+const features = [
+  { icon: '🇰🇷', title: '한글 문법', details: '한국어로 작성된 직관적인 프로그래밍 언어. 자연스러운 코딩 경험을 제공합니다.' },
+  {
+    icon: '⚙️',
+    title: '이중 실행 엔진',
+    details: '트리워킹 인터프리터와 바이트코드 VM을 모두 지원합니다. 유연한 실행 방식을 선택할 수 있습니다.',
+  },
+  { icon: '🏗️', title: 'OOP 지원', details: '클래스, 상속, 메서드 등 객체 지향 프로그래밍을 완벽하게 지원합니다.' },
+  {
+    icon: '📚',
+    title: '45개 내장 함수',
+    details: 'I/O, 타입 변환, 배열, 문자열, 수학 등 풍부한 내장 함수 라이브러리를 제공합니다.',
+  },
+  { icon: '🛡️', title: '예외 처리', details: 'try/catch를 통한 안전한 예외 처리로 안정적인 프로그램을 작성할 수 있습니다.' },
+  { icon: '📦', title: '모듈 시스템', details: '파일을 나누어 관리하고 모듈 단위로 코드를 조직할 수 있습니다.' },
+];
 ---
+
+<!doctype html>
 <html lang="ko">
-  <head><meta charset="utf-8" /><meta name="viewport" content="width=device-width" /><title>hong-ik</title></head>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+    <link rel="canonical" href={`${site}/`} />
+    <meta name="theme-color" content="#2563eb" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="ko_KR" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={`${site}/og-image.svg`} />
+    <meta property="og:url" content={`${site}/`} />
+    <meta property="og:site_name" content="hong-ik" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={`${site}/og-image.svg`} />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"
+    />
+    <!-- ===== LEGACY SHARE-LINK FORWARDING: 옛 공유 링크(/?code=… 등)를 /playground/로 넘기는 스크립트 자리 ===== -->
+    <!-- ===== /LEGACY SHARE-LINK FORWARDING ===== -->
+  </head>
   <body>
-    <h1>hong-ik</h1>
-    <p><a href="/playground/">플레이그라운드</a> · <a href="/docs/">문서</a></p>
+    <header class="nav">
+      <a class="brand" href="/"><img src="/logo.svg" alt="" width="28" height="28" />hong-ik</a>
+      <nav>
+        <a href="/docs/getting-started/introduction/">시작하기</a>
+        <a href="/docs/language-reference/types/">언어 레퍼런스</a>
+        <a href="/docs/builtin-functions/io/">내장 함수</a>
+        <a href="/docs/tutorials/basics-variables/">튜토리얼</a>
+        <a href="/playground/">플레이그라운드</a>
+        <a href="https://github.com/hongik2023graduationproject/hong-ik" rel="noopener">GitHub</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="hero-text">
+          <h1><span class="name">hong-ik</span><span class="text">한글로 프로그래밍하세요</span></h1>
+          <p class="tagline">Korean Programming Language for Everyone</p>
+          <div class="actions">
+            {actions.map((a) => <a class={`button ${a.theme}`} href={a.link}>{a.text}</a>)}
+          </div>
+        </div>
+        <div class="hero-image">
+          <img src="/logo.svg" alt="hong-ik" width="240" height="240" />
+        </div>
+      </section>
+
+      <section class="features">
+        {
+          features.map((f) => (
+            <article class="feature">
+              <div class="icon" aria-hidden="true">{f.icon}</div>
+              <h2>{f.title}</h2>
+              <p>{f.details}</p>
+            </article>
+          ))
+        }
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>Released under the MIT License.</p>
+      <p>Copyright © 2024-2026 hong-ik Contributors</p>
+    </footer>
   </body>
 </html>
