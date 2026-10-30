@@ -1,6 +1,45 @@
 ---
+// 플레이그라운드: 브라우저 WASM으로 코드를 실행하는 React 앱 하나를 통째로 띄운다.
+// 서버 렌더링할 내용이 없어 client:only로 섬을 마운트한다. Tailwind는 섬(PlaygroundApp)에서만 가져온다.
+import PlaygroundApp from '../components/playground/PlaygroundApp';
+
+const title = '홍익 Playground';
+const description =
+  '한글 프로그래밍 언어 홍익(hong-ik)의 온라인 플레이그라운드. 브라우저에서 바로 한글로 코드를 작성하고 실행하세요.';
+const ogDescription = '한글 프로그래밍 언어 홍익의 온라인 플레이그라운드. 한글로 코드를 작성하고 즉시 실행해보세요.';
+const canonical = new URL('/playground/', Astro.site).href;
 ---
+
+<!doctype html>
 <html lang="ko">
-  <head><meta charset="utf-8" /><meta name="viewport" content="width=device-width" /><title>플레이그라운드 — hong-ik</title></head>
-  <body><p>플레이그라운드를 옮기는 중입니다.</p></body>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta
+      name="keywords"
+      content="홍익, hong-ik, 한글 프로그래밍 언어, 한국어 프로그래밍, Korean programming language, playground, online IDE, 코딩 교육"
+    />
+    <meta name="application-name" content={title} />
+    <meta name="format-detection" content="telephone=no, address=no, email=no" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0a0a0a" />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="ko_KR" />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:site_name" content={title} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={ogDescription} />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content="한글 프로그래밍 언어 홍익의 온라인 플레이그라운드." />
+  </head>
+  <body>
+    <PlaygroundApp client:only="react" />
+    <noscript>플레이그라운드는 브라우저에서 JavaScript와 WebAssembly로 실행됩니다. JavaScript를 켜 주세요.</noscript>
+  </body>
 </html>

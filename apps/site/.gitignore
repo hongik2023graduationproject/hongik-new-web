@@ -1,0 +1,6 @@
+# WASM 런타임 — hong-ik release에서 CI가 받아온다(WASM_DEST=apps/site/public ./scripts/sync-wasm.sh).
+public/hongik-wasm.js
+public/hongik-wasm.wasm
+public/manifest.json
+# packages/wasm 빌드 산출물을 scripts/copy-worker.mjs가 복사한다.
+public/hongik-worker.js

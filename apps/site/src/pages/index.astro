@@ -57,6 +57,7 @@ const features = [
       href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"
     />
     <!-- ===== LEGACY SHARE-LINK FORWARDING: 옛 공유 링크(/?code=… 등)를 /playground/로 넘기는 스크립트 자리 ===== -->
+    <script is:inline>(()=>{const{search:s,hash:h}=location,p=new URLSearchParams(s);if(/^#(?:.*&)?code=/.test(h)||p.has("code")||p.has("share"))location.replace("/playground/"+s+h)})()</script>
     <!-- ===== /LEGACY SHARE-LINK FORWARDING ===== -->
   </head>
   <body>
