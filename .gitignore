@@ -46,3 +46,6 @@ turbo-build-*.log
 # OS
 .DS_Store
 Thumbs.db
+
+# Astro
+.astro/

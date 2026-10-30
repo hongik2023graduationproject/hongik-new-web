@@ -4,7 +4,7 @@
 # 사용:
 #   ./scripts/sync-wasm.sh                       # latest (rolling)
 #   ./scripts/sync-wasm.sh wasm-<sha>            # 특정 빌드에 고정
-#   WASM_DEST=apps/playground/public ./scripts/sync-wasm.sh
+#   WASM_DEST=apps/site/public ./scripts/sync-wasm.sh
 #
 # CI 통합:
 #   - pnpm install 직후 호출 (Next.js 빌드 전).
@@ -14,7 +14,7 @@ set -euo pipefail
 
 TAG="${1:-wasm-latest}"
 REPO="${WASM_REPO:-hongik2023graduationproject/hong-ik}"
-DEST="${WASM_DEST:-apps/playground/public}"
+DEST="${WASM_DEST:-apps/site/public}"
 
 echo "[sync-wasm] $REPO @ $TAG → $DEST"
 
