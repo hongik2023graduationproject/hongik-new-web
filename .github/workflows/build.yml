@@ -40,28 +40,28 @@ jobs:
         run: pnpm lint
 
       - name: 테스트 실행 (커버리지 포함)
-        run: pnpm turbo run test -- --coverage
+        # 패키지마다 <패키지>/coverage/coverage-summary.json 을 남긴다(아래 요약 단계가 읽음).
+        run: pnpm turbo run test -- --coverage --coverage.reporter=text-summary --coverage.reporter=json-summary
 
       - name: 커버리지 요약 생성
         if: always()
         run: |
           echo '## Web 테스트 커버리지 리포트' > coverage-summary.md
           echo '' >> coverage-summary.md
-          if [ -f coverage/coverage-summary.json ]; then
-            node -e "
-              const r = require('./coverage/coverage-summary.json');
-              const t = r.total;
-              const fmt = (m) => m.pct + '%';
-              console.log('| 항목 | 커버리지 |');
-              console.log('|------|----------|');
-              console.log('| Statements | ' + fmt(t.statements) + ' |');
-              console.log('| Branches | ' + fmt(t.branches) + ' |');
-              console.log('| Functions | ' + fmt(t.functions) + ' |');
-              console.log('| Lines | ' + fmt(t.lines) + ' |');
-            " >> coverage-summary.md
-          else
-            echo '커버리지 데이터를 찾을 수 없습니다.' >> coverage-summary.md
-          fi
+          node -e "
+            const fs = require('fs');
+            const dirs = ['apps', 'packages'].flatMap(d => fs.readdirSync(d).map(n => d + '/' + n));
+            const rows = dirs
+              .filter(d => fs.existsSync(d + '/coverage/coverage-summary.json'))
+              .map(d => {
+                const t = require('./' + d + '/coverage/coverage-summary.json').total;
+                return '| ' + d + ' | ' + [t.statements, t.branches, t.functions, t.lines].map(m => m.pct + '%').join(' | ') + ' |';
+              });
+            if (!rows.length) { console.log('커버리지 데이터를 찾을 수 없습니다.'); process.exit(0); }
+            console.log('| 패키지 | Statements | Branches | Functions | Lines |');
+            console.log('|--------|-----------|----------|-----------|-------|');
+            rows.forEach(r => console.log(r));
+          " >> coverage-summary.md
 
       - name: PR에 커버리지 코멘트
         if: github.event_name == 'pull_request'
@@ -75,7 +75,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: web-coverage
-          path: coverage/
+          path: |
+            apps/*/coverage/
+            packages/*/coverage/
 
   build-deploy:
     if: github.event_name == 'push'
