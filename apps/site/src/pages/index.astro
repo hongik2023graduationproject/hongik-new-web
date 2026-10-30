@@ -1,6 +1,7 @@
 ---
 // 소개 페이지(/) — 옛 hongik-docs의 VitePress 홈(docs/index.md hero/features)을 옮긴 것.
 // 프레임워크 JS 없이 정적 HTML + intro.css만 쓴다.
+import 'pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css';
 import '../styles/intro.css';
 
 const title = 'hong-ik — 한글 프로그래밍 언어';
@@ -52,10 +53,6 @@ const features = [
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={`${site}/og-image.svg`} />
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"
-    />
     <!-- ===== LEGACY SHARE-LINK FORWARDING: 옛 공유 링크(/?code=… 등)를 /playground/로 넘기는 스크립트 자리 ===== -->
     <script is:inline>(()=>{const{search:s,hash:h}=location,p=new URLSearchParams(s);if(/^#(?:.*&)?code=/.test(h)||p.has("code")||p.has("share"))location.replace("/playground/"+s+h)})()</script>
     <!-- ===== /LEGACY SHARE-LINK FORWARDING ===== -->

@@ -18,19 +18,13 @@ export default defineConfig({
       favicon: '/logo.svg',
       locales: { root: { label: '한국어', lang: 'ko' } },
       social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/hongik2023graduationproject/hong-ik' }],
-      customCss: ['./src/styles/docs.css'],
+      // Pretendard는 npm 패키지에서 자체 호스팅한다(가변 폰트, 글자 묶음별로 필요할 때만 받음).
+      customCss: ['pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css', './src/styles/docs.css'],
       components: { Footer: './src/components/docs/Footer.astro' },
       head: [
         { tag: 'meta', attrs: { name: 'theme-color', content: '#2563eb' } },
         { tag: 'meta', attrs: { property: 'og:image', content: 'https://hongik.tolelom.xyz/og-image.svg' } },
         { tag: 'meta', attrs: { name: 'twitter:image', content: 'https://hongik.tolelom.xyz/og-image.svg' } },
-        {
-          tag: 'link',
-          attrs: {
-            rel: 'stylesheet',
-            href: 'https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css',
-          },
-        },
       ],
       // 옛 VitePress 사이드바(섹션별 4개)를 하나로 합쳤다. 그룹·라벨·순서는 그대로.
       sidebar: [
