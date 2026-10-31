@@ -5,5 +5,10 @@ export default defineConfig({
     // 단위 테스트는 플레이그라운드 src 아래 *.test.ts만 (Playwright e2e/는 제외).
     include: ["src/**/*.test.ts"],
     environment: "node",
+    coverage: {
+      // Vitest 4+ dropped `coverage.all`; list sources explicitly so untested files still count.
+      // .vue files are left out: this config has no Vue plugin to parse them.
+      include: ["src/**/*.{ts,tsx}"],
+    },
   },
 });

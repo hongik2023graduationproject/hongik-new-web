@@ -9,6 +9,8 @@ export function useTheme(): [Theme, (theme: Theme) => void] {
     // Try to get theme from localStorage or system preference
     const stored = localStorage.getItem('theme') as Theme | null;
     if (stored) {
+      // Reading localStorage after mount keeps the first render SSR-safe (hydration two-pass pattern).
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setThemeState(stored);
       document.documentElement.classList.toggle('dark', stored === 'dark');
     } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
