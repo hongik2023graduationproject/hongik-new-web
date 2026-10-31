@@ -16,8 +16,10 @@ updates:
           - "minor"
           - "patch"
     ignore:
-      # Next.js major는 라이브러리/플러그인 호환성 영향이 커 별도 검토.
-      - dependency-name: "next"
+      # Astro·Starlight major는 통합 호환성 영향이 커 별도 검토.
+      - dependency-name: "astro"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@astrojs/*"
         update-types: ["version-update:semver-major"]
 
   - package-ecosystem: "github-actions"
