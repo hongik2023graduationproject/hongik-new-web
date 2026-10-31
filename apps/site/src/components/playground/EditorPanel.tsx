@@ -56,7 +56,7 @@ export function EditorPanel() {
   const handleEditorMount: OnMount = (editorInstance, monaco) => {
     editorRef.current = editorInstance;
 
-    if (!monaco.languages.getLanguages().some((l) => l.id === HONGIK_LANGUAGE_ID)) {
+    if (!monaco.languages.getLanguages().some((l: { id: string }) => l.id === HONGIK_LANGUAGE_ID)) {
       monaco.languages.register({ id: HONGIK_LANGUAGE_ID });
       monaco.languages.setLanguageConfiguration(
         HONGIK_LANGUAGE_ID,
