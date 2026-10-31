@@ -13,7 +13,7 @@ export default defineConfig({
     // 문서(/docs/) — 옛 hongik-docs(VitePress)의 사이드바·메타를 옮긴 것.
     starlight({
       title: 'hong-ik',
-      description: '한국어로 작성하는 직관적인 프로그래밍 언어. 한글 문법, 이중 실행 엔진, OOP를 지원합니다.',
+      description: '한국어로 작성하는 직관적인 프로그래밍 언어. 한글 문법, 바이트코드 VM, OOP를 지원합니다.',
       logo: { src: './src/assets/logo.svg' },
       favicon: '/logo.svg',
       locales: { root: { label: '한국어', lang: 'ko' } },

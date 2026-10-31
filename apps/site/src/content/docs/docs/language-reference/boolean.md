@@ -14,10 +14,12 @@ title: "논리 (Boolean)"
 ## 논리 연산
 
 ```hik
-true && true     // true  (AND)
-true || false    // true  (OR)
-!true            // false (NOT)
+출력(true && true)     // true  (AND)
+출력(true || false)    // true  (OR)
+출력(!true)            // false (NOT)
 ```
+
+`&&`와 `||`의 피연산자는 반드시 논리 값이어야 하며 결과도 항상 논리 값입니다. 왼쪽만으로 결과가 정해지면 오른쪽은 계산하지 않습니다(단락 평가).
 
 ## 비교 연산 결과
 

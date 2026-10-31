@@ -36,7 +36,7 @@ import InlinePlayground from '../../../../components/docs/InlinePlayground.vue';
 
 ### 실수 선언
 
-실수는 소수점이 있는 수입니다.
+실수는 소수점이 있는 수입니다. 실수 변수에는 `1.0`처럼 소수점을 붙여 써야 합니다. `실수 x = 1`처럼 정수를 넣으면 타입이 맞지 않아 오류가 납니다(자동 변환 없음).
 
 ```hik
 실수 pi = 3.14159
@@ -71,6 +71,18 @@ import InlinePlayground from '../../../../components/docs/InlinePlayground.vue';
 출력(거짓)    // false
 ```
 
+### 값이 없을 수 있는 변수
+
+`없음`은 값이 없다는 뜻입니다. 일반 변수에는 `없음`을 넣을 수 없고, 타입 뒤에 `?`를 붙인 Optional 변수에만 넣을 수 있습니다:
+
+```hik
+정수? 점수 = 없음
+출력(점수)    // 없음
+
+점수 = 90
+출력(점수)    // 90
+```
+
 ## 타입 변환
 
 서로 다른 타입 간 변환이 필요할 때가 있습니다.
@@ -82,7 +94,7 @@ import InlinePlayground from '../../../../components/docs/InlinePlayground.vue';
 정수 숫자 = 정수변환(숫자문자)
 
 출력(숫자)      // 42
-출력(타입(숫자))  // "정수"
+출력(타입(숫자))  // 정수
 ```
 
 ### 정수를 문자로
@@ -91,8 +103,8 @@ import InlinePlayground from '../../../../components/docs/InlinePlayground.vue';
 정수 x = 100
 문자 x문자 = 문자변환(x)
 
-출력(x문자)     // "100"
-출력(타입(x문자)) // "문자"
+출력(x문자)     // 100
+출력(타입(x문자)) // 문자
 ```
 
 ### 실수 변환
@@ -110,16 +122,16 @@ import InlinePlayground from '../../../../components/docs/InlinePlayground.vue';
 
 ```hik
 정수 정수값 = 10
-출력(타입(정수값))    // "정수"
+출력(타입(정수값))    // 정수
 
 실수 실수값 = 3.14
-출력(타입(실수값))    // "실수"
+출력(타입(실수값))    // 실수
 
 문자 문자값 = "안녕"
-출력(타입(문자값))    // "문자"
+출력(타입(문자값))    // 문자
 
 논리 논리값 = true
-출력(타입(논리값))    // "논리"
+출력(타입(논리값))    // 논리
 ```
 
 ## 변수 재할당
