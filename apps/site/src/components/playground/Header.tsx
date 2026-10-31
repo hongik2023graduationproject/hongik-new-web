@@ -57,8 +57,8 @@ import {
   Moon,
   Square,
   Share2,
-  Code2,
-  HelpCircle,
+  CodeXml,
+  CircleQuestionMark,
   GraduationCap,
 } from "lucide-react";
 import { OnboardingTutorial } from "./OnboardingTutorial";
@@ -340,7 +340,7 @@ export function Header() {
           title="코드 정리 (Ctrl+Shift+F)"
           aria-label="코드 정리"
         >
-          <Code2 className="h-4 w-4" />
+          <CodeXml className="h-4 w-4" />
         </Button>
         <Button
           variant="outline"
@@ -349,7 +349,7 @@ export function Header() {
           onClick={handleFormat}
           title="코드 정리 (Ctrl+Shift+F)"
         >
-          <Code2 className="h-3.5 w-3.5" />
+          <CodeXml className="h-3.5 w-3.5" />
           정리
         </Button>
 
@@ -394,7 +394,7 @@ export function Header() {
               aria-label="단축키 도움말"
               data-onboarding="help-button"
             >
-              <HelpCircle className="h-4 w-4" />
+              <CircleQuestionMark className="h-4 w-4" />
             </Button>
           </DialogTrigger>
           <DialogContent>
