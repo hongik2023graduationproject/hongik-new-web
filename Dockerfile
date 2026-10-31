@@ -1,15 +1,7 @@
-FROM node:20-alpine
+FROM nginx:alpine
 
-WORKDIR /app
-
-ENV NODE_ENV=production
-ENV PORT=3000
-ENV HOSTNAME=0.0.0.0
-
-COPY apps/playground/.next/standalone ./
-COPY apps/playground/.next/static ./apps/playground/.next/static
-COPY apps/playground/public ./apps/playground/public
+# Astro 정적 사이트(apps/site/dist)를 그대로 서빙한다. 빌드는 CI에서 먼저 한다.
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY apps/site/dist /usr/share/nginx/html
 
 EXPOSE 3000
-
-CMD ["node", "apps/playground/server.js"]

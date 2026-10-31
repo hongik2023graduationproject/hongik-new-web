@@ -5,6 +5,9 @@
   ],
   "pipeline": {
     "dev": {
+      "dependsOn": [
+        "^build"
+      ],
       "cache": false,
       "persistent": true
     },
@@ -13,11 +16,13 @@
         "^build"
       ],
       "outputs": [
-        "dist/**",
-        ".next/**"
+        "dist/**"
       ]
     },
     "test": {
+      "dependsOn": [
+        "build"
+      ],
       "outputs": [
         "coverage/**"
       ]
