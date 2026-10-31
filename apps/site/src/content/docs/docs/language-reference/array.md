@@ -12,6 +12,8 @@ title: "배열 (Array)"
 배열 빈배열 = []
 ```
 
+배열 리터럴은 한 줄에 써야 합니다. 여러 줄에 나눠 쓰면 파스 오류가 납니다.
+
 ## 인덱싱
 
 0부터 시작하는 인덱스로 요소에 접근합니다:
@@ -31,6 +33,17 @@ title: "배열 (Array)"
 배열 목록 = [10, 20, 30]
 출력(목록[-1])    // 30 (마지막 요소)
 출력(목록[-2])    // 20
+```
+
+범위를 벗어난 인덱스에 접근하면 `배열의 범위 밖 인덱스입니다: 인덱스 5, 배열 크기 3` 같은 런타임 오류가 납니다.
+
+## 슬라이싱
+
+`[시작:끝]`으로 시작 인덱스부터 끝 인덱스 **미만**까지의 부분 배열을 얻습니다:
+
+```hik
+배열 목록 = [10, 20, 30, 40]
+출력(목록[1:3])    // [20, 30]
 ```
 
 ## 배열 수정
@@ -53,6 +66,6 @@ title: "배열 (Array)"
 - [`찾기(배열, 값)`](/docs/builtin-functions/array/) - 요소 검색
 - [`조각(배열, 시작, 끝)`](/docs/builtin-functions/array/) - 부분 배열
 - [`포함(배열, 값)`](/docs/builtin-functions/array/) - 포함 여부
-- [`매핑(배열, 함수)`](/docs/builtin-functions/higher-order/) - 변환
-- [`걸러내기(배열, 함수)`](/docs/builtin-functions/higher-order/) - 필터
-- [`줄이기(배열, 함수, 초기값)`](/docs/builtin-functions/higher-order/) - 축약
+- [`매핑(배열, 함수)`](/docs/builtin-functions/higher-order/) - 변환 (현재 `--eval` 전용)
+- [`걸러내기(배열, 함수)`](/docs/builtin-functions/higher-order/) - 필터 (현재 `--eval` 전용)
+- [`줄이기(배열, 함수, 초기값)`](/docs/builtin-functions/higher-order/) - 축약 (현재 `--eval` 전용)

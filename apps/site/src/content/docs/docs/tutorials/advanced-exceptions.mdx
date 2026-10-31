@@ -41,6 +41,15 @@ import InlinePlayground from '../../../../components/docs/InlinePlayground.vue';
 
 </InlinePlayground>
 
+출력:
+```
+5
+나눗셈 오류: [줄 3] 0으로 나눌 수 없습니다.
+0
+```
+
+함수 안에서 `시도` 블록이 `리턴`으로 끝나도, 오류가 나면 `실패` 블록이 실행됩니다.
+
 ### 타입 변환 오류
 
 ```hik
@@ -55,6 +64,13 @@ import InlinePlayground from '../../../../components/docs/InlinePlayground.vue';
 출력(안전변환("abc"))      // 0
 ```
 
+출력:
+```
+42
+변환 실패: abc
+0
+```
+
 ### 파일 처리
 
 ```hik
@@ -65,6 +81,8 @@ import InlinePlayground from '../../../../components/docs/InlinePlayground.vue';
     출력("설정 파일을 찾을 수 없습니다")
     // 기본값 사용
 ```
+
+웹 플레이그라운드에서는 미리 준비된 파일이 없으므로 항상 `실패` 블록이 실행됩니다.
 
 ## 실전 예제: 안전한 계산기
 
@@ -91,8 +109,14 @@ import InlinePlayground from '../../../../components/docs/InlinePlayground.vue';
     실패 오류:
         출력("계산 오류: {오류}")
 
-계산("10 + 5")     // 15
-계산("10 / 0")     // 계산 오류 메시지
+계산("10 + 5")
+계산("10 / 0")
+```
+
+출력:
+```
+15
+계산 오류: [줄 17] 0으로 나눌 수 없습니다.
 ```
 
 ## 다음 단계

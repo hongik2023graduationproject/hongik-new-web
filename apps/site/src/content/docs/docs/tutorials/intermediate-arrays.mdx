@@ -23,9 +23,12 @@ import InlinePlayground from '../../../../components/docs/InlinePlayground.vue';
 
 ```hik
 배열 목록 = [1, 2, 3]
-추가(목록, 4)          // [1, 2, 3, 4]
-삭제(목록, 0)          // [2, 3, 4]
-목록[0] = 10           // [10, 3, 4]
+추가(목록, 4)
+출력(목록)    // [1, 2, 3, 4]
+삭제(목록, 0)
+출력(목록)    // [2, 3, 4]
+목록[0] = 10
+출력(목록)    // [10, 3, 4]
 ```
 
 ## while 반복문
@@ -77,7 +80,7 @@ import InlinePlayground from '../../../../components/docs/InlinePlayground.vue';
 정수 합계 = 0
 각각 정수 점수 점수들 에서:
     합계 += 점수
-실수 평균 = 합계 / 길이(점수들)
+실수 평균 = 실수변환(합계) / 길이(점수들)
 출력("평균: {평균}")
 
 // 최고점 찾기
@@ -94,6 +97,15 @@ import InlinePlayground from '../../../../components/docs/InlinePlayground.vue';
 출력("80점 이상: {우수}")
 ```
 
+출력:
+```
+평균: 83.0
+최고점: 95
+80점 이상: [85, 92, 95, 88]
+```
+
+정수끼리 나누면 결과도 정수이므로, 평균을 `실수`로 받으려면 `실수변환()`으로 한쪽을 실수로 바꿔야 합니다.
+
 ## 다음 단계
 
-- [고차 함수](/docs/tutorials/intermediate-higher-order/) - 매핑, 걸러내기, 줄이기
+- [고차 함수](/docs/tutorials/intermediate-higher-order/) - 함수를 인자로 넘기기, 매핑·걸러내기·줄이기
