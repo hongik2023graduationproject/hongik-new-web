@@ -1,0 +1,89 @@
+---
+title: "연산자"
+---
+
+import InlinePlayground from '../../../../components/docs/InlinePlayground.vue';
+
+이 튜토리얼에서는 hong-ik의 연산자를 배웁니다.
+
+## 산술 연산자
+
+<InlinePlayground client:visible>
+
+```hik
+정수 a = 10
+정수 b = 3
+
+출력(a + b)    // 13 (덧셈)
+출력(a - b)    // 7  (뺄셈)
+출력(a * b)    // 30 (곱셈)
+출력(a / b)    // 3  (나눗셈)
+출력(a % b)    // 1  (나머지)
+출력(a ** 2)   // 100 (거듭제곱)
+```
+
+</InlinePlayground>
+
+## 비교 연산자
+
+비교 결과는 `true` 또는 `false`입니다:
+
+```hik
+출력(10 == 10)    // true  (같다)
+출력(10 != 5)     // true  (다르다)
+출력(10 > 5)      // true  (크다)
+출력(10 < 20)     // true  (작다)
+출력(10 >= 10)    // true  (크거나 같다)
+출력(10 <= 15)    // true  (작거나 같다)
+```
+
+## 논리 연산자
+
+```hik
+출력(true && true)     // true   (AND: 둘 다 참)
+출력(true || false)    // true   (OR: 하나라도 참)
+출력(!true)            // false  (NOT: 반대)
+```
+
+## 복합 대입 연산자
+
+변수의 값을 갱신하는 축약 표현입니다:
+
+<InlinePlayground client:visible>
+
+```hik
+정수 x = 10
+x += 5     // x = x + 5 = 15
+x -= 3     // x = x - 3 = 12
+x *= 2     // x = x * 2 = 24
+x /= 4     // x = x / 4 = 6
+출력(x)    // 6
+x++        // x = x + 1 = 7
+출력(x)    // 7
+```
+
+</InlinePlayground>
+
+## 문자열 연결
+
+`+` 연산자로 문자열을 연결합니다:
+
+```hik
+문자 성 = "홍"
+문자 이름 = "길동"
+출력(성 + 이름)    // 홍길동
+```
+
+## 연습 문제
+
+온도 변환 프로그램을 작성해보세요:
+
+```hik
+실수 섭씨 = 36.5
+실수 화씨 = 섭씨 * 9 / 5 + 32
+출력("{섭씨}°C = {화씨}°F")
+```
+
+## 다음 단계
+
+- [조건문](/docs/tutorials/basics-conditionals/) - if/else 조건 분기
