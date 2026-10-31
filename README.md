@@ -1,212 +1,51 @@
-# Hong-ik Web Playground
+# hong-ik 웹사이트
 
-한글 프로그래밍 언어 `hong-ik`을 위한 웹 기반 플레이그라운드입니다.
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
+[![Astro](https://img.shields.io/badge/Astro-7-BC52EE.svg?logo=astro)](https://astro.build/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6.svg?logo=typescript)](https://www.typescriptlang.org/)
 
-## 🏗️ 프로젝트 구조
+한글 프로그래밍 언어 [`hong-ik`](https://github.com/hongik2023graduationproject/hong-ik)의 웹사이트입니다.
+소개, 플레이그라운드, 문서가 정적 사이트 하나(https://hongik.tolelom.xyz)에 들어 있습니다.
+
+| 경로 | 내용 | 소스 |
+| --- | --- | --- |
+| `/` | 소개 | `apps/site/src/pages/index.astro` |
+| `/playground/` | 플레이그라운드 (Monaco 편집기 + 브라우저 WASM 실행) | `apps/site/src/components/playground/` (React 섬) |
+| `/docs/` | 문서 (Starlight) | `apps/site/src/content/docs/docs/` |
+
+📖 [기여 가이드](./CONTRIBUTING.md) · [보안 정책](./SECURITY.md) · [변경 이력](./CHANGELOG.md) · [라이선스](./LICENSE)
+
+## 구조
 
 ```
-hongik-web/
-├── packages/
-│   ├── core/                 # 공유 유틸 + 타입 정의
-│   ├── ui/                   # UI 컴포넌트 (Radix + Tailwind)
-│   └── wasm/                 # WASM 런타임 바인딩
-├── apps/
-│   └── playground/           # Next.js 14 플레이그라운드
-├── turbo.json                # Turborepo 설정
-└── pnpm-workspace.yaml       # pnpm 워크스페이스 설정
+apps/
+  site/            # Astro 7 + Starlight. React(플레이그라운드)·Vue(문서 예제 실행 상자) 섬
+packages/
+  wasm/            # WASM 인터프리터 래퍼 + Web Worker (hongik-worker.js)
+  core/            # 공유 TS 유틸·타입
+  ui/              # 공유 React 컴포넌트
+  eslint-config/   # 공유 ESLint 설정
+scripts/sync-wasm.sh   # hong-ik 릴리스(wasm-latest)에서 WASM 런타임을 apps/site/public으로 받기
 ```
 
-## 🚀 시작하기
+백엔드 서버는 없습니다. 코드는 브라우저의 WASM 인터프리터에서 실행되고, 공유 링크는 코드를 압축해
+URL 프래그먼트(`/playground/#code=...`)에 담습니다. 예전 `/#code=`, `/?code=` 링크는 소개 페이지가
+`/playground/`로 넘깁니다.
 
-### 필수 요구사항
+## 시작하기
 
-- Node.js 18+
-- pnpm 8.13+
-
-### 설치
+Node.js 24(최소 22.23 — Astro 7 요구 사항)와 pnpm 9가 필요합니다.
 
 ```bash
-# 의존성 설치
 pnpm install
-
-# 개발 서버 시작
-pnpm dev
-
-# 빌드
-pnpm build
+./scripts/sync-wasm.sh    # WASM 런타임 받기 (최초 1회, 이후 hong-ik이 바뀔 때)
+pnpm dev                  # http://localhost:4321
+pnpm build                # apps/site/dist 에 정적 사이트 생성
 ```
 
-## 📦 패키지 설명
+## 배포
 
-### `@hongik/core`
-
-- **목적**: hong-ik 언어의 핵심 유틸과 타입
-- **포함 사항**:
-  - `PlaygroundState`, `WasmExecutionResult` 타입
-  - 코드 포맷팅 유틸
-  - 예제 코드 로더
-- **의존성**: 없음
-
-### `@hongik/ui`
-
-- **목적**: 공유 UI 컴포넌트 라이브러리
-- **포함 사항**:
-  - `Button`, `Editor`, `Console`, `Header` 등 UI 컴포넌트
-  - `useTheme`, `useDebounce` 훅
-  - Radix UI 기반 접근성 보장
-- **의존성**: `react`, `@radix-ui/*`
-
-### `@hongik/wasm`
-
-- **목적**: hong-ik C++ 인터프리터의 WASM 바인딩
-- **포함 사항**:
-  - `executeHongikCode()` 함수
-  - WASM 모듈 초기화 로직
-  - 메모리 관리 래퍼
-- **의존성**: 없음 (WASM은 런타임에 로드)
-
-### `@hongik/playground`
-
-- **목적**: Next.js 기반 메인 플레이그라운드 앱
-- **포함 사항**:
-  - Redux Toolkit 상태 관리
-  - Monaco Editor 통합
-  - 반응형 UI (Desktop/Mobile)
-- **의존성**: `@hongik/core`, `@hongik/ui`, `@hongik/wasm`
-
-## 🛠️ 아키텍처 결정
-
-### 상태 관리: Redux Toolkit
-
-**선택 이유**:
-- 비동기 액션 명확한 관리 (redux-thunk)
-- 미들웨어 체인으로 협력 편집, 플러그인 지원
-- Redux DevTools로 시간 여행 디버깅 가능
-- 사용자 액션 기록 가능
-
-### UI 컴포넌트: Shadcn/UI + Radix
-
-**선택 이유**:
-- Radix: 접근성(a11y) 기본 포함
-- 키보드 네비게이션, 스크린 리더 지원
-- 테마 커스터마이징 용이
-- 디자인 일관성 보장
-
-### 번들 최적화
-
-- Monaco Editor는 동적 임포트 (4.5MB → 지연 로딩)
-- Turborepo 캐싱으로 빌드 50% 단축
-- Next.js 코드 스플리팅 자동화
-
-## 📋 개발 가이드
-
-### 새 컴포넌트 추가
-
-```typescript
-// packages/ui/src/components/MyComponent.tsx
-export const MyComponent: React.FC<MyComponentProps> = (props) => {
-  return <div>{/* implementation */}</div>;
-};
-
-// packages/ui/src/components/index.ts에 export 추가
-export { MyComponent } from './MyComponent';
-```
-
-### Redux 액션 추가
-
-```typescript
-// apps/playground/store/playgroundSlice.ts
-export const playgroundSlice = createSlice({
-  // ...
-  reducers: {
-    myNewAction: (state, action: PayloadAction<string>) => {
-      // state 수정
-    },
-  },
-});
-```
-
-### 예제 코드 추가
-
-```typescript
-// packages/core/src/utils/example-loader.ts
-export const NEW_EXAMPLES: CodeExample[] = [
-  {
-    id: 'unique-id',
-    title: '예제 제목',
-    category: 'basic',
-    description: '설명',
-    code: '코드',
-    expectedOutput: '예상 출력',
-  },
-];
-```
-
-## 🧪 테스트
-
-```bash
-# 모든 테스트 실행
-pnpm test
-
-# 특정 패키지 테스트
-pnpm test --filter=@hongik/core
-
-# E2E 테스트 (Playwright)
-pnpm test:e2e
-```
-
-## 📈 성능 최적화
-
-### 초기 로딩
-
-- SSG로 플레이그라운드 페이지 사전 생성
-- 예제 JSON 번들에 포함
-- Monaco Editor는 사용 시에만 로드
-
-### 런타임
-
-- Redux DevTools 프로덕션에서 비활성화
-- 코드 포맷팅은 debounce로 제한
-- WASM 실행 결과 브라우저 캐시
-
-## 🚀 배포
-
-### Vercel 배포
-
-```bash
-# vercel.json 설정 파일 생성
-pnpm build
-
-# 자동 배포
-git push
-```
-
-### Docker 배포
-
-```dockerfile
-FROM node:18-alpine
-WORKDIR /app
-COPY . .
-RUN pnpm install
-RUN pnpm build
-EXPOSE 3000
-CMD ["pnpm", "start"]
-```
-
-## 🔄 협력 편집 (향후)
-
-Redux 미들웨어로 WebSocket 메시지 동기화:
-
-```typescript
-// 여러 사용자의 코드 변화를 액션 큐로 관리
-dispatch(setCode(remoteCode)); // 액션이 기록됨
-// → Redux DevTools에서 모든 사용자의 변화 추적 가능
-```
-
-## 📝 라이선스
-
-MIT
-
-## 📧 문의
-
-hong-ik 팀 (team@hongik.dev)
+`main`에 푸시하면 GitHub Actions(`.github/workflows/build.yml`)가 테스트 → WASM 동기화 → 빌드 후
+`apps/site/dist`를 nginx 이미지(`ghcr.io/hongik2023graduationproject/hongik-web`, linux/arm64, 포트 3000)로
+만들어 올립니다. 서버 반영은 server-config 저장소의 Renovate(digest 갱신)와 git-sync가 맡습니다.
+nginx 설정은 [`nginx.conf`](./nginx.conf)입니다.
