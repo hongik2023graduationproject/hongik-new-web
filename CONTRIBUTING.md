@@ -1,4 +1,4 @@
-# Contributing to hongik-web
+# 기여 안내
 
 홍익 프로그래밍 언어 웹사이트(소개·플레이그라운드·문서). pnpm + Turborepo 모노레포, 사이트는 Astro.
 
@@ -51,15 +51,15 @@ pnpm --filter @hongik/site e2e
 ## PR 제출
 
 1. 위 워크플로 + 검증
-2. `pnpm changeset` (공유 패키지의 외부 영향 있는 변경 시) — TBD
+2. `pnpm changeset` (공유 패키지의 외부 영향 있는 변경 시, TBD)
 3. PR 템플릿(`.github/PULL_REQUEST_TEMPLATE.md`) 따라 작성
 
 ## 배포
 
-`main`에 푸시하면 GitHub Actions(`.github/workflows/build.yml`)가 lint·테스트 → WASM 동기화 → 빌드 후 `apps/site/dist`를 nginx 이미지(`ghcr.io/hongik2023graduationproject/hongik-web`, linux/arm64, 포트 3000)로 만들어 올린다. 태그는 `latest`, `main`, 커밋 SHA. nginx 설정은 [`nginx.conf`](./nginx.conf).
+`main`에 푸시하면 GitHub Actions(`.github/workflows/build.yml`)가 lint·테스트 → WASM 동기화 → 빌드 후 `apps/site/dist`를 nginx 이미지(`ghcr.io/hongik2023graduationproject/hongik-web`, linux/arm64, 포트 3000)로 만들어 올립니다. 태그는 `latest`, `main`, 커밋 SHA입니다. nginx 설정은 [`nginx.conf`](./nginx.conf)에 있습니다.
 
-첫 빌드 전에 hong-ik 저장소의 WASM Publish 워크플로가 한 번 이상 돌아 `wasm-latest` 릴리스가 있어야 한다.
+첫 빌드 전에 hong-ik 저장소의 WASM Publish 워크플로가 한 번 이상 돌아 `wasm-latest` 릴리스가 있어야 합니다.
 
 ## 보안
 
-[`SECURITY.md`](./SECURITY.md) 참조.
+[`SECURITY.md`](./SECURITY.md)에 있습니다.
