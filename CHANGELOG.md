@@ -4,7 +4,7 @@
 
 ## [Unreleased] - 2026-05-19
 
-### 변경 (Changed): Astro로 사이트 통합 ⚠️
+### 변경 (Changed): Astro로 사이트 통합
 - **플레이그라운드와 문서를 한 사이트로**: Next.js 플레이그라운드(`apps/playground`)와 별도 저장소의 VitePress 문서(hongik-docs)를 Astro 7 정적 사이트 `apps/site` 하나로 합쳤다. `/` 소개, `/playground/` 플레이그라운드(React 섬), `/docs/` 문서(Starlight, 46쪽, 한국어 검색).
 - **주소 변경**: 플레이그라운드가 `/`에서 `/playground/`로 옮겼다. 예전 `/#code=`, `/?code=`, `/?share=` 링크는 소개 페이지가 `/playground/`로 넘긴다. 예전 문서 주소(hongik-docs.tolelom.xyz) → `/docs/` 대응표는 `apps/site/docs-redirects.txt` (리다이렉트는 서버 설정에서).
 - **Monaco**: webpack 플러그인 대신 Vite `?worker`로 편집기 워커만 번들. CDN 요청 없음.

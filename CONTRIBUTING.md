@@ -19,7 +19,7 @@
 
 ### 브랜치 / 커밋
 - `feat/<summary>`, `fix/<summary>`, `refactor/<summary>` 등으로 분기.
-- conventional commits 권장 (`feat(site):`, `fix(playground):`, `docs(docs):`, `fix(wasm):`).
+- conventional commits 권장 (`feat(site):`, `fix(site):`, `docs(docs):`, `fix(wasm):`).
 
 ### 코드 스타일
 - TypeScript strict 유지. `any` 회피, 외부 입력은 `unknown` + Zod로 좁히기.

@@ -9,7 +9,7 @@ const files = ["**/*.{ts,tsx}"];
 
 export default tseslint.config(
   {
-    ignores: ["dist/", ".next/", "node_modules/", "coverage/", "**/*.config.js", "**/*.config.ts"],
+    ignores: ["dist/", "node_modules/", "coverage/", "**/*.config.js", "**/*.config.ts"],
   },
   {
     files,
