@@ -36,13 +36,12 @@ pnpm dev
 | 문서 | 내용 |
 |---|---|
 | [ARCHITECTURE.md](ARCHITECTURE.md) | 모노레포 구성과 실행 구조 |
-| [SETUP.md](SETUP.md) | 개발 환경 설정, 검증, 문서 작성 |
 | [CHANGELOG.md](CHANGELOG.md) | 변경 이력 |
 | [SECURITY.md](SECURITY.md) | 보안 정책 |
 
 ## 기여
 
-검증 명령, 코드 규칙, 배포 흐름은 [CONTRIBUTING.md](CONTRIBUTING.md)에 있습니다.
+검증 명령, 코드 규칙, 문서 작성 방법, 배포 흐름은 [CONTRIBUTING.md](CONTRIBUTING.md)에 있습니다.
 
 ## 라이선스
 

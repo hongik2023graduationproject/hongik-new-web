@@ -40,13 +40,26 @@ pnpm --filter @hongik/site exec playwright install --with-deps chromium  # 최�
 pnpm --filter @hongik/site e2e
 ```
 
+E2E는 `pnpm build`로 만든 `dist/`를 `astro preview`로 띄워 검사하므로 빌드 뒤에 돌립니다.
+
 ### 새 패키지/의존성
 - 워크스페이스 간 의존은 `workspace:*` 사용.
 - 외부 npm 추가 시 PR 본문에 사유 + 번들 영향 설명.
 - 잠금 파일 무결성: CI는 `--frozen-lockfile`로 install. 로컬에서 의존 추가 후 lockfile도 같이 커밋.
 
 ### WASM 빌드 산출물
-`apps/site/public/hongik-wasm.{js,wasm}`는 `hong-ik` 저장소 릴리스(`wasm-latest`)에서 `./scripts/sync-wasm.sh`로 받는 산출물이고, `hongik-worker.js`는 `packages/wasm` 빌드 결과를 복사한 것입니다. 둘 다 커밋하지 않습니다.
+`apps/site/public/hongik-wasm.{js,wasm}`는 `hong-ik` 저장소 릴리스(`wasm-latest`)에서 `./scripts/sync-wasm.sh`로 받는 산출물이고, `hongik-worker.js`는 `packages/wasm` 빌드 결과를 복사한 것입니다. 둘 다 커밋하지 않습니다(`apps/site/.gitignore`).
+
+- `hongik-worker.js`는 `dev`·`build`가 먼저 실행하는 `apps/site/scripts/copy-worker.mjs`가 복사합니다. `public/`의 사본을 직접 고치지 않습니다.
+- 특정 hong-ik 빌드로 고정하려면 `./scripts/sync-wasm.sh wasm-<커밋 SHA>`를 씁니다. hong-ik 저장소는 SHA 릴리스를 최근 10개만 남깁니다.
+
+## 문서 작성
+
+문서는 `apps/site/src/content/docs/docs/` 아래 Markdown입니다.
+
+- 사이드바 순서는 `apps/site/astro.config.mjs`의 `starlight({ sidebar })`에 있습니다.
+- 실행 가능한 예제가 필요한 페이지는 `.mdx`로 만들고 `src/components/docs/`의 `InlinePlayground.vue`나 `RunCode.vue`를 `client:visible`로 넣습니다.
+- 알림 상자는 `:::tip`, `:::caution[제목]`으로 씁니다.
 
 ## PR 제출
 
