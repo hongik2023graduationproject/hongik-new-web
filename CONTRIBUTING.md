@@ -9,31 +9,11 @@
 - Node.js 24 (최소 22.23, Astro 7 요구 사항)
 - pnpm 9.15.9 (`corepack enable` 또는 `npm i -g pnpm@9.15.9`)
 
-### 시작하기
-
-```bash
-git clone https://github.com/hongik2023graduationproject/hongik-new-web.git
-cd hongik-new-web
-pnpm install
-./scripts/sync-wasm.sh   # WASM 런타임 받기 (최초 1회)
-pnpm dev                 # apps/site — http://localhost:4321
-```
-
-백엔드 서버나 `.env` 설정 없이 바로 동작합니다 (실행은 브라우저 WASM, 공유는 URL 프래그먼트).
+설치와 실행은 [README의 시작하기](README.md#시작하기)에 있습니다.
 
 ## 모노레포 구조
 
-```
-apps/
-  site/                    # Astro 사이트: / 소개, /playground/ (React 섬), /docs/ (Starlight)
-packages/
-  core/                    # 순수 TS 유틸 + 타입
-  ui/                      # 공유 React 컴포넌트 (Radix 기반)
-  wasm/                    # WASM 인터프리터 래퍼 + Web Worker
-  eslint-config/           # 공유 ESLint 설정
-```
-
-각 워크스페이스는 `package.json`을 가지며 turbo로 빌드 순서가 결정됩니다 (`apps/site`는 `packages/wasm`에 의존).
+워크스페이스 구성은 [ARCHITECTURE.md](ARCHITECTURE.md)에 있습니다.
 
 ## 개발 워크플로
 
@@ -73,6 +53,12 @@ pnpm --filter @hongik/site e2e
 1. 위 워크플로 + 검증
 2. `pnpm changeset` (공유 패키지의 외부 영향 있는 변경 시) — TBD
 3. PR 템플릿(`.github/PULL_REQUEST_TEMPLATE.md`) 따라 작성
+
+## 배포
+
+`main`에 푸시하면 GitHub Actions(`.github/workflows/build.yml`)가 lint·테스트 → WASM 동기화 → 빌드 후 `apps/site/dist`를 nginx 이미지(`ghcr.io/hongik2023graduationproject/hongik-web`, linux/arm64, 포트 3000)로 만들어 올린다. 태그는 `latest`, `main`, 커밋 SHA. nginx 설정은 [`nginx.conf`](./nginx.conf).
+
+첫 빌드 전에 hong-ik 저장소의 WASM Publish 워크플로가 한 번 이상 돌아 `wasm-latest` 릴리스가 있어야 한다.
 
 ## 보안
 
