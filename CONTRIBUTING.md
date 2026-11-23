@@ -69,9 +69,9 @@ E2E는 `pnpm build`로 만든 `dist/`를 `astro preview`로 띄워 검사하므�
 
 ## 배포
 
-`main`에 푸시하면 GitHub Actions(`.github/workflows/build.yml`)가 lint·테스트 → WASM 동기화 → 빌드 후 `apps/site/dist`를 nginx 이미지(`ghcr.io/hongik2023graduationproject/hongik-web`, linux/arm64, 포트 3000)로 만들어 올립니다. 태그는 `latest`, `main`, 커밋 SHA입니다. nginx 설정은 [`nginx.conf`](./nginx.conf)에 있습니다.
+`main`에 푸시하면 GitHub Actions(`.github/workflows/ci.yml`)가 lint·테스트 → WASM 동기화 → 빌드 후 `apps/site/dist`를 nginx 이미지(`ghcr.io/hongik2023graduationproject/hongik-web`, linux/arm64, 포트 3000)로 만들어 올립니다. 태그는 `latest`, `main`, 커밋 SHA입니다. nginx 설정은 [`nginx.conf`](./nginx.conf)에 있습니다.
 
-첫 빌드 전에 hong-ik 저장소의 WASM Publish 워크플로가 한 번 이상 돌아 `wasm-latest` 릴리스가 있어야 합니다.
+첫 빌드 전에 hong-ik 저장소의 release 워크플로가 한 번 이상 돌아 `wasm-latest` 릴리스가 있어야 합니다.
 
 ## 보안
 
